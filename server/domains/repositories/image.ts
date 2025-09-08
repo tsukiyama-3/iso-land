@@ -1,6 +1,6 @@
-import { generateImage as generateGeminiImage } from '../../infrastructures/gemini/image'
+import { generateImage as generateGeminiImage } from '~~/server/infrastructures/gemini/image'
 
-export const generateImage = async () => {
-  const response = await generateGeminiImage()
+export const generateImage = async (body: { prompt: string }) => {
+  const response = await generateGeminiImage(body)
   return response
 }

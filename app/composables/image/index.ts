@@ -1,38 +1,51 @@
-export const useImage = async () => {
-  const { data: image, status } = await useFetch('/api/ai/image', {
-    method: 'POST',
-  })
+export const useImage = () => {
+  const prompt = ref('')
+  const messages = ref<{ role: 'user' | 'assistant', type: 'text' | 'image' | 'loading', content?: string, mimeType?: string, data?: string }[]>([])
 
-  const download = () => {
-    if (!image.value || image.value.type !== 'image' || !image.value.data) {
-      return
+  const onSubmit = async () => {
+    if (!prompt.value.trim()) return
+
+    // ユーザーメッセージ追加
+    messages.value.push({
+      role: 'user',
+      type: 'text',
+      content: prompt.value,
+    })
+
+    // ローディングメッセージ追加
+    const loadingIndex = messages.value.push({
+      role: 'assistant',
+      type: 'loading',
+      content: '生成中…',
+    }) - 1
+
+    try {
+      const { data } = await useFetch('/api/ai/image', {
+        method: 'POST',
+        body: { prompt: prompt.value },
+      })
+
+
+      // ローディングを置き換え
+      messages.value[loadingIndex] = {
+        role: 'assistant',
+        type: data.value?.type || 'text',
+        content: data.value?.data,
+        mimeType: data.value?.mimeType,
+        data: data.value?.data,
+      }
     }
-
-    const byteCharacters = atob(image.value.data)
-    const byteNumbers = new Array(byteCharacters.length)
-    for (let i = 0; i < byteCharacters.length; i++) {
-      byteNumbers[i] = byteCharacters.charCodeAt(i)
+    catch {
+      messages.value[loadingIndex] = {
+        role: 'assistant',
+        type: 'text',
+        content: 'エラーが発生しました。',
+      }
     }
-    const byteArray = new Uint8Array(byteNumbers)
-    const blob = new Blob([byteArray], { type: image.value.mimeType })
-
-    const now = new Date()
-    const yyyy = now.getFullYear()
-    const mm = String(now.getMonth() + 1).padStart(2, '0')
-    const dd = String(now.getDate()).padStart(2, '0')
-    const hh = String(now.getHours()).padStart(2, '0')
-    const mi = String(now.getMinutes()).padStart(2, '0')
-    const ss = String(now.getSeconds()).padStart(2, '0')
-
-    const filename = `gemini-image-${yyyy}${mm}${dd}-${hh}${mi}${ss}.png`
-
-    // ダウンロード処理
-    const link = document.createElement('a')
-    link.href = URL.createObjectURL(blob)
-    link.download = filename
-    link.click()
-    URL.revokeObjectURL(link.href)
+    finally {
+      prompt.value = ''
+    }
   }
 
-  return { image, status, download }
+  return { prompt, messages, onSubmit }
 }
