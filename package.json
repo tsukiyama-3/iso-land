@@ -11,9 +11,14 @@
   },
   "dependencies": {
     "@nuxt/eslint": "^1.9.0",
+    "@nuxt/scripts": "^0.11.10",
+    "@unhead/vue": "^2.0.14",
     "eslint": "^9.35.0",
     "nuxt": "^4.1.1",
     "vue": "^3.5.20",
     "vue-router": "^4.5.1"
+  },
+  "devDependencies": {
+    "@types/google.maps": "^3.58.1"
   }
 }
