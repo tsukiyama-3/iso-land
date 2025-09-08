@@ -31,11 +31,17 @@ onMounted(() => {
 <template>
   <div>
     <h1>Index</h1>
-    <div style="display: grid; grid-template-columns: repeat(2, 50%);">
+    <div
+      class="grid grid-cols-2"
+    >
+      <div
+        ref="mapRef"
+        class="aspect-square w-full rounded-xl"
+      />
       <div>
-        <button @click="download">
-          button
-        </button>
+        <UButton @click="download">
+          Download
+        </UButton>
         <img
           :src="`data:${image?.mimeType};base64,${image?.data}`"
           alt=""
@@ -43,10 +49,6 @@ onMounted(() => {
           height="500"
         >
       </div>
-      <div
-        ref="mapRef"
-        style="aspect-ratio: 1 / 1; width: 30%; border-radius: 8px;"
-      />
     </div>
   </div>
 </template>
