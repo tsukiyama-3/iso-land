@@ -32,43 +32,52 @@ onMounted(() => {
   <UContainer>
     <h1>Chat</h1>
 
-    <!-- メッセージ一覧 -->
-    <div class="space-y-4 my-4">
+    <div class="grid grid-cols-2">
       <div
-        v-for="(msg, index) in messages"
-        :key="index"
-        :class="msg.role === 'user' ? 'text-right' : 'text-left'"
-      >
-        <!-- テキスト -->
-        <p v-if="msg.type === 'text'">
-          {{ msg.content }}
-        </p>
+        ref="mapRef"
+        class="aspect-square"
+      />
 
-        <!-- ローディング -->
-        <p
-          v-else-if="msg.type === 'loading'"
-          class="italic text-gray-500"
-        >
-          {{ msg.content }}
-        </p>
+      <div>
+        <!-- メッセージ一覧 -->
+        <div class="space-y-4 my-4">
+          <div
+            v-for="(msg, index) in messages"
+            :key="index"
+            :class="msg.role === 'user' ? 'text-right' : 'text-left'"
+          >
+            <!-- テキスト -->
+            <p v-if="msg.type === 'text'">
+              {{ msg.content }}
+            </p>
 
-        <!-- 画像 -->
-        <img
-          v-else-if="msg.type === 'image'"
-          :src="`data:${msg.mimeType};base64,${msg.data}`"
-          class="rounded-lg max-w-[300px] inline-block"
+            <!-- ローディング -->
+            <p
+              v-else-if="msg.type === 'loading'"
+              class="italic text-gray-500"
+            >
+              {{ msg.content }}
+            </p>
+
+            <!-- 画像 -->
+            <img
+              v-else-if="msg.type === 'image'"
+              :src="`data:${msg.mimeType};base64,${msg.data}`"
+              class="rounded-lg max-w-[300px] inline-block"
+            >
+          </div>
+        </div>
+
+        <!-- 入力フォーム -->
+        <UChatPrompt
+          v-model="prompt"
+          class="[view-transition-name:chat-prompt]"
+          variant="subtle"
+          @submit="onSubmit"
         >
+          <UChatPromptSubmit color="neutral" />
+        </UChatPrompt>
       </div>
     </div>
-
-    <!-- 入力フォーム -->
-    <UChatPrompt
-      v-model="prompt"
-      class="[view-transition-name:chat-prompt]"
-      variant="subtle"
-      @submit="onSubmit"
-    >
-      <UChatPromptSubmit color="neutral" />
-    </UChatPrompt>
   </UContainer>
 </template>

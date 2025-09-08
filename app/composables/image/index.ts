@@ -1,6 +1,6 @@
 export const useImage = () => {
   const prompt = ref('')
-  const messages = ref<{ role: 'user' | 'assistant', type: 'text' | 'image' | 'loading', content?: string, mimeType?: string, data?: string }[]>([])
+  const messages = ref<{ role: 'user' | 'assistant', type: string, content?: string, mimeType?: string, data?: string }[]>([])
 
   const onSubmit = async () => {
     if (!prompt.value.trim()) return
@@ -24,7 +24,6 @@ export const useImage = () => {
         method: 'POST',
         body: { prompt: prompt.value },
       })
-
 
       // ローディングを置き換え
       messages.value[loadingIndex] = {

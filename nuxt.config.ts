@@ -3,6 +3,9 @@ export default defineNuxtConfig({
   modules: ['@nuxt/ui', '@nuxt/eslint', '@nuxt/scripts'],
   devtools: { enabled: true },
   css: ['~/assets/css/main.css'],
+  ui: {
+    colorMode: false,
+  },
   runtimeConfig: {
     public: {
       google: {

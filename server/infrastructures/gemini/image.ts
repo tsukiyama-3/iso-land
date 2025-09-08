@@ -1,4 +1,5 @@
 import { GoogleGenAI } from '@google/genai'
+import { Buffer } from 'node:buffer'
 
 export const generateImage = async (body: { prompt: string }) => {
   const config = useRuntimeConfig()
@@ -6,12 +7,25 @@ export const generateImage = async (body: { prompt: string }) => {
     apiKey: config.gemini.apiKey,
   })
 
+  const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=35.710063,139.8107&zoom=16&size=600x600&key=${config.public.google.apiKey}`
+  const arrayBuffer = await $fetch<ArrayBuffer>(staticMapUrl, { responseType: 'arrayBuffer' })
+  const buffer = Buffer.from(arrayBuffer)
+  const base64 = buffer.toString('base64')
+
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash-image-preview',
     contents: [
       {
         role: 'user',
-        parts: [{ text: body.prompt }],
+        parts: [
+          { text: `${config.basePrompt}${body.prompt}` },
+          {
+            inlineData: {
+              mimeType: 'image/png',
+              data: base64,
+            },
+          },
+        ],
       },
     ],
   })
