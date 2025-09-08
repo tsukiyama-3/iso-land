@@ -1,7 +1,11 @@
 <script setup lang="ts">
-const mapRef = ref<HTMLElement | null>(null)
+import { useImage } from '~/composables/image'
 
 const config = useRuntimeConfig()
+
+const mapRef = ref<HTMLElement | null>(null)
+
+const { image, status, download } = await useImage()
 
 const { onLoaded } = useScriptGoogleMaps({
   apiKey: config.public.google.apiKey,
@@ -27,11 +31,22 @@ onMounted(() => {
 <template>
   <div>
     <h1>Index</h1>
-    <ClientOnly>
+    <div style="display: grid; grid-template-columns: repeat(2, 50%);">
+      <div>
+        <button @click="download">
+          button
+        </button>
+        <img
+          :src="`data:${image?.mimeType};base64,${image?.data}`"
+          alt=""
+          width="500"
+          height="500"
+        >
+      </div>
       <div
         ref="mapRef"
         style="aspect-ratio: 1 / 1; width: 30%; border-radius: 8px;"
       />
-    </ClientOnly>
+    </div>
   </div>
 </template>

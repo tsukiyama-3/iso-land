@@ -8,6 +8,10 @@ export default defineNuxtConfig({
         apiKey: '',
       },
     },
+    gemini: {
+      apiKey: '',
+    },
+    basePrompt: '',
   },
   compatibilityDate: '2025-07-15',
   eslint: {
