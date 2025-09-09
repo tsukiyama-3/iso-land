@@ -7,7 +7,7 @@ const mapRef = ref<HTMLElement | null>(null)
 const marker = ref<any>(null)
 const chatContainerRef = ref<HTMLElement | null>(null)
 
-const { prompt, messages, status, isComposing, handleEnter } = useImage()
+const { prompt, messages, status, isComposing, handleEnter, latLng } = useImage()
 
 const scrollToBottom = () => {
   nextTick(() => {
@@ -51,7 +51,7 @@ onMounted(() => {
         map,
         position: e.latLng,
       })
-      console.log(marker.value)
+      latLng.value = e.latLng
     })
   })
 })
@@ -78,7 +78,7 @@ onMounted(() => {
             :class="msg.role === 'user' ? 'text-right' : 'text-left'"
           >
             <UChatMessage
-              v-if="msg.type === 'text'"
+              v-if="msg.role === 'user'"
               :id="'1'"
               variant="soft"
               role="system"
@@ -86,7 +86,21 @@ onMounted(() => {
               :parts="[
                 {
                   type: 'text',
-                  text: msg.content ?? '',
+                  text: msg.text ?? '',
+                },
+              ]"
+            />
+
+            <UChatMessage
+              v-else-if="msg.type === 'text'"
+              :id="'1'"
+              variant="soft"
+              role="system"
+              side="left"
+              :parts="[
+                {
+                  type: 'text',
+                  text: msg.text ?? '',
                 },
               ]"
             />

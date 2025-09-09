@@ -1,26 +1,49 @@
+type UserMessage = {
+  role: 'user'
+  type: 'text'
+  text: string
+}
+
+type AssistantTextMessage = {
+  role: 'assistant'
+  type: 'text' | 'loading' | 'error'
+  content: string
+}
+
+type AssistantImageMessage = {
+  role: 'assistant'
+  type: 'image'
+  mimeType: string
+  data: string
+}
+
+type ChatMessage = UserMessage | AssistantTextMessage | AssistantImageMessage
+
 export const useImage = () => {
   const prompt = ref('')
   const status = ref<'ready' | 'submitted' | 'streaming' | 'error'>('ready')
   const isComposing = ref(false)
+  const latLng = ref<google.maps.MapMouseEvent['latLng'] | null>(null)
 
-  const messages = ref<
-    { role: 'user' | 'assistant', type: string, content?: string, mimeType?: string, data?: string }[]
-  >([])
+  const messages = ref<ChatMessage[]>([])
 
   const onSubmit = async () => {
     console.log('onSubmit', prompt.value, prompt.value.trim())
-    if (!prompt.value.trim()) return
+    if (!prompt.value.trim()) {
+      return
+    }
+    if (!latLng.value) {
+      return
+    }
 
     status.value = 'submitted'
 
-    // ユーザーメッセージ追加
     messages.value.push({
       role: 'user',
       type: 'text',
-      content: prompt.value,
+      text: prompt.value,
     })
 
-    // ローディングメッセージ追加
     const loadingIndex
       = messages.value.push({
         role: 'assistant',
@@ -32,7 +55,7 @@ export const useImage = () => {
       status.value = 'streaming'
       const { data } = await useFetch('/api/ai/image', {
         method: 'POST',
-        body: { prompt: prompt.value },
+        body: { prompt: prompt.value, latLng },
       })
       console.log(data.value, 'data')
 
@@ -41,7 +64,8 @@ export const useImage = () => {
         role: 'assistant',
         type: data.value?.type || 'text',
         content: data.value?.data,
-        mimeType: data.value?.mimeType,
+        mimeType: data.value?.mimeType ?? '',
+        text: data.value?.content ?? '',
         data: data.value?.data,
       }
       status.value = 'ready'
@@ -70,5 +94,5 @@ export const useImage = () => {
     }
   }
 
-  return { prompt, messages, onSubmit, status, isComposing, handleEnter }
+  return { prompt, messages, onSubmit, status, isComposing, handleEnter, latLng }
 }

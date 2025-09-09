@@ -1,16 +1,17 @@
 import { GoogleGenAI } from '@google/genai'
 import { Buffer } from 'node:buffer'
 
-export const generateImage = async (body: { prompt: string }) => {
+export const generateImage = async (body: { prompt: string, latLng: google.maps.MapMouseEvent['latLng'] }) => {
   const config = useRuntimeConfig()
   const ai = new GoogleGenAI({
     apiKey: config.gemini.apiKey,
   })
 
-  const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=35.63078175096637,139.88115107459188&zoom=16&size=600x600&key=${config.public.google.apiKey}`
+  const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${body.latLng?.lat},${body.latLng?.lng}&zoom=16&size=600x600&markers=color:red%7C${body.latLng?.lat},${body.latLng?.lng}&key=${config.public.google.apiKey}`
   const arrayBuffer = await $fetch<ArrayBuffer>(staticMapUrl, { responseType: 'arrayBuffer' })
   const buffer = Buffer.from(arrayBuffer)
   const base64 = buffer.toString('base64')
+  console.log(staticMapUrl, 'staticMapUrl')
 
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash-image-preview',
@@ -31,8 +32,8 @@ export const generateImage = async (body: { prompt: string }) => {
   })
 
   const parts = response.candidates?.[0]?.content?.parts || []
+  console.log(response.candidates, 'response.candidates')
 
-  // 画像があれば返す
   const imagePart = parts.find(p => p.inlineData)
   if (imagePart?.inlineData) {
     return {
@@ -42,16 +43,6 @@ export const generateImage = async (body: { prompt: string }) => {
     }
   }
 
-  // テキストがあれば返す
-  const textPart = parts.find(p => p.text)
-  if (textPart?.text) {
-    return {
-      type: 'text',
-      content: textPart.text,
-    }
-  }
-
-  // どちらも無ければ fallback
   return {
     type: 'text',
     content: '画像を生成できませんでした。',
