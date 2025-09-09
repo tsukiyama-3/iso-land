@@ -4,8 +4,22 @@ import { useImage } from '~/composables/image'
 const config = useRuntimeConfig()
 
 const mapRef = ref<HTMLElement | null>(null)
+const marker = ref<any>(null)
+const chatContainerRef = ref<HTMLElement | null>(null)
 
-const { prompt, messages, onSubmit } = useImage()
+const { prompt, messages, status, isComposing, handleEnter } = useImage()
+
+const scrollToBottom = () => {
+  nextTick(() => {
+    if (chatContainerRef.value) {
+      chatContainerRef.value.scrollTop = chatContainerRef.value.scrollHeight
+    }
+  })
+}
+
+watch(messages, () => {
+  scrollToBottom()
+}, { deep: true })
 
 const { onLoaded } = useScriptGoogleMaps({
   apiKey: config.public.google.apiKey,
@@ -13,16 +27,31 @@ const { onLoaded } = useScriptGoogleMaps({
 
 onMounted(() => {
   onLoaded(async (instance) => {
-    if (!mapRef.value) {
-      return
-    }
+    if (!mapRef.value) return
 
     const maps = await instance.maps
     const { Map } = await maps.importLibrary('maps') as google.maps.MapsLibrary
+    const { AdvancedMarkerElement } = await maps.importLibrary('marker') as google.maps.MarkerLibrary
 
-    new Map(mapRef.value, {
+    const map = new Map(mapRef.value, {
       center: { lat: 35.685355, lng: 139.753144 },
       zoom: 8,
+      mapId: '4dd6c17f0750a29a89cda4c8', // 👈 Cloud Console で発行した mapId
+    })
+
+    map.addListener('click', (e: google.maps.MapMouseEvent) => {
+      if (!e.latLng) return
+
+      if (marker.value) {
+        marker.value.map = null
+        marker.value = null
+      }
+
+      marker.value = new AdvancedMarkerElement({
+        map,
+        position: e.latLng,
+      })
+      console.log(marker.value)
     })
   })
 })
@@ -32,26 +61,36 @@ onMounted(() => {
   <UContainer>
     <h1>Chat</h1>
 
-    <div class="grid grid-cols-2">
+    <div class="grid grid-cols-2 gap-x-4 h-[calc(100vh-200px)]">
       <div
         ref="mapRef"
-        class="aspect-square"
+        class="aspect-square w-[600px] rounded-xl"
       />
 
-      <div>
-        <!-- メッセージ一覧 -->
-        <div class="space-y-4 my-4">
+      <div class="flex flex-col h-full space-y-4">
+        <div
+          ref="chatContainerRef"
+          class="h-[536px] overflow-y-auto p-4 space-y-4 border border-gray-200 rounded-xl"
+        >
           <div
             v-for="(msg, index) in messages"
             :key="index"
             :class="msg.role === 'user' ? 'text-right' : 'text-left'"
           >
-            <!-- テキスト -->
-            <p v-if="msg.type === 'text'">
-              {{ msg.content }}
-            </p>
+            <UChatMessage
+              v-if="msg.type === 'text'"
+              :id="'1'"
+              variant="soft"
+              role="system"
+              side="right"
+              :parts="[
+                {
+                  type: 'text',
+                  text: msg.content ?? '',
+                },
+              ]"
+            />
 
-            <!-- ローディング -->
             <p
               v-else-if="msg.type === 'loading'"
               class="italic text-gray-500"
@@ -59,7 +98,6 @@ onMounted(() => {
               {{ msg.content }}
             </p>
 
-            <!-- 画像 -->
             <img
               v-else-if="msg.type === 'image'"
               :src="`data:${msg.mimeType};base64,${msg.data}`"
@@ -68,15 +106,19 @@ onMounted(() => {
           </div>
         </div>
 
-        <!-- 入力フォーム -->
-        <UChatPrompt
-          v-model="prompt"
-          class="[view-transition-name:chat-prompt]"
-          variant="subtle"
-          @submit="onSubmit"
-        >
-          <UChatPromptSubmit color="neutral" />
-        </UChatPrompt>
+        <div class="flex-shrink-0">
+          <UChatPrompt
+            v-model="prompt"
+            :status="status"
+            variant="subtle"
+            class="rounded-xl"
+            @keydown.enter.prevent="handleEnter"
+            @compositionstart="isComposing = true"
+            @compositionend="isComposing = false"
+          >
+            <UChatPromptSubmit color="neutral" />
+          </UChatPrompt>
+        </div>
       </div>
     </div>
   </UContainer>

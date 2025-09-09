@@ -1,9 +1,17 @@
 export const useImage = () => {
   const prompt = ref('')
-  const messages = ref<{ role: 'user' | 'assistant', type: string, content?: string, mimeType?: string, data?: string }[]>([])
+  const status = ref<'ready' | 'submitted' | 'streaming' | 'error'>('ready')
+  const isComposing = ref(false)
+
+  const messages = ref<
+    { role: 'user' | 'assistant', type: string, content?: string, mimeType?: string, data?: string }[]
+  >([])
 
   const onSubmit = async () => {
+    console.log('onSubmit', prompt.value, prompt.value.trim())
     if (!prompt.value.trim()) return
+
+    status.value = 'submitted'
 
     // ユーザーメッセージ追加
     messages.value.push({
@@ -13,17 +21,20 @@ export const useImage = () => {
     })
 
     // ローディングメッセージ追加
-    const loadingIndex = messages.value.push({
-      role: 'assistant',
-      type: 'loading',
-      content: '生成中…',
-    }) - 1
+    const loadingIndex
+      = messages.value.push({
+        role: 'assistant',
+        type: 'loading',
+        content: '生成中…',
+      }) - 1
 
     try {
+      status.value = 'streaming'
       const { data } = await useFetch('/api/ai/image', {
         method: 'POST',
         body: { prompt: prompt.value },
       })
+      console.log(data.value, 'data')
 
       // ローディングを置き換え
       messages.value[loadingIndex] = {
@@ -33,6 +44,7 @@ export const useImage = () => {
         mimeType: data.value?.mimeType,
         data: data.value?.data,
       }
+      status.value = 'ready'
     }
     catch {
       messages.value[loadingIndex] = {
@@ -40,11 +52,23 @@ export const useImage = () => {
         type: 'text',
         content: 'エラーが発生しました。',
       }
+      status.value = 'error'
     }
     finally {
       prompt.value = ''
     }
   }
 
-  return { prompt, messages, onSubmit }
+  const handleEnter = (e: KeyboardEvent) => {
+    if (isComposing.value) {
+      return
+    }
+
+    if (!e.shiftKey) {
+      e.preventDefault()
+      onSubmit()
+    }
+  }
+
+  return { prompt, messages, onSubmit, status, isComposing, handleEnter }
 }

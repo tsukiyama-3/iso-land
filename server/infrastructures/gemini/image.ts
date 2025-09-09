@@ -7,7 +7,7 @@ export const generateImage = async (body: { prompt: string }) => {
     apiKey: config.gemini.apiKey,
   })
 
-  const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=35.710063,139.8107&zoom=16&size=600x600&key=${config.public.google.apiKey}`
+  const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=35.63078175096637,139.88115107459188&zoom=16&size=600x600&key=${config.public.google.apiKey}`
   const arrayBuffer = await $fetch<ArrayBuffer>(staticMapUrl, { responseType: 'arrayBuffer' })
   const buffer = Buffer.from(arrayBuffer)
   const base64 = buffer.toString('base64')
