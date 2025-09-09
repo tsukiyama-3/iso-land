@@ -11,7 +11,6 @@ export const generateImage = async (body: { prompt: string, latLng: google.maps.
   const arrayBuffer = await $fetch<ArrayBuffer>(staticMapUrl, { responseType: 'arrayBuffer' })
   const buffer = Buffer.from(arrayBuffer)
   const base64 = buffer.toString('base64')
-  console.log(staticMapUrl, config.basePrompt, 'staticMapUrl')
 
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash-image-preview',
@@ -19,7 +18,7 @@ export const generateImage = async (body: { prompt: string, latLng: google.maps.
       {
         role: 'user',
         parts: [
-          { text: `${config.basePrompt}${body.prompt}` },
+          { text: `${config.basePrompt.replace(/\\n/g, '\n')}${body.prompt}` },
           {
             inlineData: {
               mimeType: 'image/png',
@@ -35,7 +34,6 @@ export const generateImage = async (body: { prompt: string, latLng: google.maps.
     ?.flatMap(c => c.content?.parts ?? [])
     .find(p => p.inlineData)
 
-  console.log(response.candidates, imagePart, 'response.candidates imagePart')
   if (imagePart?.inlineData) {
     return {
       type: 'image',
