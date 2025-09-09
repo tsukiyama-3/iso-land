@@ -11,7 +11,7 @@ export const generateImage = async (body: { prompt: string, latLng: google.maps.
   const arrayBuffer = await $fetch<ArrayBuffer>(staticMapUrl, { responseType: 'arrayBuffer' })
   const buffer = Buffer.from(arrayBuffer)
   const base64 = buffer.toString('base64')
-  console.log(staticMapUrl, 'staticMapUrl')
+  console.log(staticMapUrl, config.basePrompt, 'staticMapUrl')
 
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash-image-preview',
@@ -31,20 +31,24 @@ export const generateImage = async (body: { prompt: string, latLng: google.maps.
     ],
   })
 
-  const parts = response.candidates?.[0]?.content?.parts || []
-  console.log(response.candidates, 'response.candidates')
+  const imagePart = response.candidates
+    ?.flatMap(c => c.content?.parts ?? [])
+    .find(p => p.inlineData)
 
-  const imagePart = parts.find(p => p.inlineData)
+  console.log(response.candidates, imagePart, 'response.candidates imagePart')
   if (imagePart?.inlineData) {
     return {
       type: 'image',
       mimeType: imagePart.inlineData.mimeType,
       data: imagePart.inlineData.data,
+      content: '',
     }
   }
 
   return {
     type: 'text',
     content: '画像を生成できませんでした。',
+    mimeType: '',
+    data: '',
   }
 }

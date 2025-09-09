@@ -100,7 +100,7 @@ onMounted(() => {
               :parts="[
                 {
                   type: 'text',
-                  text: msg.text ?? '',
+                  text: msg.content ?? '',
                 },
               ]"
             />

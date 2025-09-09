@@ -8,11 +8,14 @@ type AssistantTextMessage = {
   role: 'assistant'
   type: 'text' | 'loading' | 'error'
   content: string
+  mimeType?: string
+  data?: string
 }
 
 type AssistantImageMessage = {
   role: 'assistant'
   type: 'image'
+  content: string
   mimeType: string
   data: string
 }
@@ -55,26 +58,33 @@ export const useImage = () => {
       status.value = 'streaming'
       const { data } = await useFetch('/api/ai/image', {
         method: 'POST',
-        body: { prompt: prompt.value, latLng },
+        body: {
+          prompt: prompt.value,
+          latLng: {
+            lat: latLng.value?.lat(),
+            lng: latLng.value?.lng(),
+          },
+        },
       })
       console.log(data.value, 'data')
 
       // ローディングを置き換え
       messages.value[loadingIndex] = {
         role: 'assistant',
-        type: data.value?.type || 'text',
-        content: data.value?.data,
-        mimeType: data.value?.mimeType ?? '',
-        text: data.value?.content ?? '',
-        data: data.value?.data,
+        type: (data.value?.type as 'text' | 'image') || 'text',
+        content: data.value?.content || '',
+        mimeType: data.value?.mimeType || '',
+        data: data.value?.data || '',
       }
       status.value = 'ready'
     }
     catch {
       messages.value[loadingIndex] = {
         role: 'assistant',
-        type: 'text',
+        type: 'error',
         content: 'エラーが発生しました。',
+        mimeType: '',
+        data: '',
       }
       status.value = 'error'
     }
