@@ -61,16 +61,16 @@ onMounted(() => {
   <UContainer>
     <h1>Chat</h1>
 
-    <div class="grid grid-cols-2 gap-x-4 h-[calc(100vh-200px)]">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:h-[calc(100vh-200px)]">
       <div
         ref="mapRef"
-        class="aspect-square w-[600px] rounded-xl"
+        class="aspect-square w-full md:w-[600px] rounded-xl"
       />
 
       <div class="flex flex-col h-full space-y-4">
         <div
           ref="chatContainerRef"
-          class="h-[536px] overflow-y-auto p-4 space-y-4 border border-gray-200 rounded-xl"
+          class="h-[300px] md:h-[536px] overflow-y-auto p-4 space-y-4 border border-gray-200 rounded-xl"
         >
           <div
             v-for="(msg, index) in messages"
