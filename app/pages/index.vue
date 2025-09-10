@@ -78,27 +78,32 @@ const quickChats = [
     label: 'ゲーム『Minecraft』のスタイルで作成してください。',
   },
   {
-    label: 'ゲーム『Pokemon』のスタイルで作成してください。',
+    label: '『LEGO』のスタイルで作成してください。',
   },
   {
     label: 'ゲーム『Theme Park』のスタイルで作成してください。',
   },
   {
-    label: '『LEGO』のスタイルで作成してください。',
-
+    label: 'ゲーム『Pokemon』のスタイルで作成してください。',
   },
 ]
 </script>
 
 <template>
   <UContainer>
-    <h1>Chat</h1>
-
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div
-        ref="mapRef"
-        :class="[isInteracting ? 'aspect-[4/3]' : 'aspect-[3/1]', 'transition-all duration-500 md:aspect-square w-full md:max-w-[600px] rounded-xl']"
-      />
+      <ClientOnly>
+        <template #fallback>
+          <div class="aspect-[3/1] md:aspect-square w-full md:max-w-[600px] rounded-xl border border-muted flex items-center justify-center">
+            <USkeleton class="w-full h-full rounded-xl" />
+          </div>
+        </template>
+
+        <div
+          ref="mapRef"
+          :class="[isInteracting ? 'aspect-[4/3]' : 'aspect-[3/1]', 'border border-muted transition-all duration-500 md:aspect-square w-full md:max-w-[600px] rounded-xl']"
+        />
+      </ClientOnly>
 
       <div class="flex flex-col h-full space-y-4 aspect-square max-w-full">
         <div
@@ -183,8 +188,8 @@ const quickChats = [
               :key="quickChat.label"
               :label="quickChat.label"
               size="md"
-              color="neutral"
-              variant="outline"
+              color="primary"
+              variant="subtle"
               class="rounded-full shrink-0"
               @click="prompt = quickChat.label"
             />
