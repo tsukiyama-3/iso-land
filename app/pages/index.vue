@@ -81,7 +81,7 @@ const quickChats = [
         class="aspect-[4/3] md:aspect-square w-full md:max-w-[600px] rounded-xl"
       />
 
-      <div class="flex flex-col h-full space-y-4 aspect-square">
+      <div class="flex flex-col h-full space-y-4 aspect-square max-w-full">
         <div
           ref="chatContainerRef"
           class="h-[300px] md:h-[536px] overflow-y-auto p-4 space-y-4 border border-gray-200 rounded-xl"
@@ -138,7 +138,7 @@ const quickChats = [
           </div>
         </div>
 
-        <div class="flex-shrink-0">
+        <div class="flex-shrink-0 space-y-2">
           <UChatPrompt
             v-model="prompt"
             :status="status"
@@ -164,7 +164,7 @@ const quickChats = [
               :key="quickChat.label"
               :icon="quickChat.icon"
               :label="quickChat.label"
-              size="sm"
+              size="md"
               color="neutral"
               variant="outline"
               class="rounded-full shrink-0"
