@@ -39,12 +39,15 @@ export const useImage = () => {
       return
     }
 
+    const userPrompt = prompt.value
+    prompt.value = ''
+
     status.value = 'submitted'
 
     messages.value.push({
       role: 'user',
       type: 'text',
-      text: prompt.value,
+      text: userPrompt,
     })
 
     const loadingIndex
@@ -56,25 +59,27 @@ export const useImage = () => {
 
     try {
       status.value = 'streaming'
-      const { data } = await useFetch('/api/ai/image', {
+
+      const data = await $fetch('/api/ai/image', {
         method: 'POST',
         body: {
-          prompt: prompt.value,
+          prompt: userPrompt,
           latLng: {
             lat: latLng.value?.lat(),
             lng: latLng.value?.lng(),
           },
         },
       })
-      console.log(data.value, 'data')
+
+      console.log(data, 'data')
 
       // ローディングを置き換え
       messages.value[loadingIndex] = {
         role: 'assistant',
-        type: (data.value?.type as 'text' | 'image') || 'text',
-        content: data.value?.content || '',
-        mimeType: data.value?.mimeType || '',
-        data: data.value?.data || '',
+        type: (data?.type as 'text' | 'image') || 'text',
+        content: data?.content || '',
+        mimeType: data?.mimeType || '',
+        data: data?.data || '',
       }
       status.value = 'ready'
     }
@@ -87,9 +92,6 @@ export const useImage = () => {
         data: '',
       }
       status.value = 'error'
-    }
-    finally {
-      prompt.value = ''
     }
   }
 

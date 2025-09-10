@@ -7,7 +7,7 @@ const mapRef = ref<HTMLElement | null>(null)
 const marker = ref<any>(null)
 const chatContainerRef = ref<HTMLElement | null>(null)
 
-const { prompt, messages, status, isComposing, handleEnter, latLng } = useImage()
+const { prompt, messages, status, isComposing, handleEnter, latLng, onSubmit } = useImage()
 
 const scrollToBottom = () => {
   nextTick(() => {
@@ -55,6 +55,20 @@ onMounted(() => {
     })
   })
 })
+
+const quickChats = [
+  {
+    label: 'ゲーム『Minecraft』のスタイルで作成してください。',
+    icon: 'material-icon-theme:minecraft',
+  },
+  {
+    label: 'ゲーム『Theme Park』のスタイルで作成してください。',
+  },
+  {
+    label: '『LEGO』のスタイルで作成してください。',
+
+  },
+]
 </script>
 
 <template>
@@ -89,6 +103,9 @@ onMounted(() => {
                   text: msg.text ?? '',
                 },
               ]"
+              :ui="{
+                content: 'border border-muted',
+              }"
             />
 
             <UChatMessage
@@ -103,19 +120,20 @@ onMounted(() => {
                   text: msg.content ?? '',
                 },
               ]"
+              :ui="{
+                content: 'border border-muted',
+              }"
             />
 
-            <p
-              v-else-if="msg.type === 'loading'"
-              class="italic text-gray-500"
-            >
-              {{ msg.content }}
-            </p>
+            <USkeleton
+              v-else-if="msg.type ==='loading'"
+              class="w-[300px] aspect-square rounded-lg border border-muted"
+            />
 
             <img
               v-else-if="msg.type === 'image'"
               :src="`data:${msg.mimeType};base64,${msg.data}`"
-              class="rounded-lg max-w-[300px] inline-block"
+              class="rounded-lg max-w-[300px] inline-block border border-muted"
             >
           </div>
         </div>
@@ -126,12 +144,32 @@ onMounted(() => {
             :status="status"
             variant="subtle"
             class="rounded-xl"
+            placeholder="マインクラフト風にしてください。"
+            :disabled="status === 'submitted' || status === 'streaming'"
             @keydown.enter.prevent="handleEnter"
             @compositionstart="isComposing = true"
             @compositionend="isComposing = false"
           >
-            <UChatPromptSubmit color="neutral" />
+            <UChatPromptSubmit
+              color="neutral"
+              :disabled="status === 'submitted' || status === 'streaming'"
+              :disable="true"
+              @click="onSubmit"
+            />
           </UChatPrompt>
+
+          <div class="flex gap-x-2 whitespace-nowrap overflow-x-auto w-full scrollbar-none py-2">
+            <UButton
+              v-for="quickChat in quickChats"
+              :key="quickChat.label"
+              :icon="quickChat.icon"
+              :label="quickChat.label"
+              size="sm"
+              color="neutral"
+              variant="outline"
+              class="rounded-full shrink-0"
+            />
+          </div>
         </div>
       </div>
     </div>

@@ -15,6 +15,9 @@ export default defineNuxtConfig({
     gemini: {
       apiKey: '',
     },
+    openRouter: {
+      apiKey: '',
+    },
     basePrompt: '',
   },
   compatibilityDate: '2025-07-15',
