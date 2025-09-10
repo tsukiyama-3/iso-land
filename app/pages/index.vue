@@ -36,7 +36,7 @@ onMounted(() => {
     const map = new Map(mapRef.value, {
       center: { lat: 35.685355, lng: 139.753144 },
       zoom: 8,
-      mapId: '4dd6c17f0750a29a89cda4c8', // 👈 Cloud Console で発行した mapId
+      mapId: '4dd6c17f0750a29a89cda4c8',
     })
 
     map.addListener('click', (e: google.maps.MapMouseEvent) => {
@@ -168,6 +168,7 @@ const quickChats = [
               color="neutral"
               variant="outline"
               class="rounded-full shrink-0"
+              @click="prompt = quickChat.label"
             />
           </div>
         </div>
