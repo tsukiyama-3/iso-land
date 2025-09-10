@@ -107,6 +107,10 @@ export const useImage = () => {
         data: '',
       }
       status.value = 'error'
+      toast.add({
+        title: 'エラーが発生しました。もう一度お試しください。',
+        color: 'error',
+      })
     }
   }
 
