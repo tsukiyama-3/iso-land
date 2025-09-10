@@ -39,6 +39,7 @@ onMounted(() => {
       zoom: 8,
       mapId: '4dd6c17f0750a29a89cda4c8',
       disableDefaultUI: true,
+      gestureHandling: 'greedy',
     })
 
     map.addListener('click', (e: google.maps.MapMouseEvent) => {
@@ -176,6 +177,7 @@ const quickChats = [
           >
             <UChatPromptSubmit
               color="neutral"
+              variant="solid"
               :disabled="status === 'submitted' || status === 'streaming'"
               :disable="true"
               @click="onSubmit"
