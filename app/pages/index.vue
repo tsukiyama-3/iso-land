@@ -5,6 +5,7 @@ const config = useRuntimeConfig()
 
 const mapRef = ref<HTMLElement | null>(null)
 const marker = ref<any>(null)
+const isInteracting = ref(false)
 const chatContainerRef = ref<HTMLElement | null>(null)
 
 const { prompt, messages, status, isComposing, handleEnter, latLng, onSubmit } = useImage()
@@ -53,6 +54,14 @@ onMounted(() => {
         position: e.latLng,
       })
       latLng.value = e.latLng
+      isInteracting.value = false
+    })
+    map.addListener('dragstart', () => {
+      isInteracting.value = true
+    })
+
+    map.addListener('zoom_changed', () => {
+      isInteracting.value = true
     })
   })
 })
@@ -81,7 +90,7 @@ const quickChats = [
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div
         ref="mapRef"
-        class="aspect-[4/3] md:aspect-square w-full md:max-w-[600px] rounded-xl"
+        :class="[isInteracting ? 'aspect-[4/3]' : 'aspect-[3/1]', 'transition-all duration-500 md:aspect-square w-full md:max-w-[600px] rounded-xl']"
       />
 
       <div class="flex flex-col h-full space-y-4 aspect-square max-w-full">
