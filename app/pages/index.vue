@@ -59,7 +59,9 @@ onMounted(() => {
 const quickChats = [
   {
     label: 'ゲーム『Minecraft』のスタイルで作成してください。',
-    icon: 'material-icon-theme:minecraft',
+  },
+  {
+    label: 'ゲーム『Pokemon』のスタイルで作成してください。',
   },
   {
     label: 'ゲーム『Theme Park』のスタイルで作成してください。',
@@ -162,7 +164,6 @@ const quickChats = [
             <UButton
               v-for="quickChat in quickChats"
               :key="quickChat.label"
-              :icon="quickChat.icon"
               :label="quickChat.label"
               size="md"
               color="neutral"

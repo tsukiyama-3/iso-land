@@ -23,12 +23,19 @@ type AssistantImageMessage = {
 type ChatMessage = UserMessage | AssistantTextMessage | AssistantImageMessage
 
 export const useImage = () => {
+  const toast = useToast()
   const prompt = ref('')
   const status = ref<'ready' | 'submitted' | 'streaming' | 'error'>('ready')
   const isComposing = ref(false)
   const latLng = ref<google.maps.MapMouseEvent['latLng'] | null>(null)
 
-  const messages = ref<ChatMessage[]>([])
+  const messages = ref<ChatMessage[]>([
+    {
+      role: 'assistant',
+      type: 'text',
+      content: 'ようこそ',
+    },
+  ])
 
   const onSubmit = async () => {
     console.log('onSubmit', prompt.value, prompt.value.trim())
@@ -36,6 +43,10 @@ export const useImage = () => {
       return
     }
     if (!latLng.value) {
+      toast.add({
+        title: 'マップにピンを立ててください。',
+        color: 'error',
+      })
       return
     }
 
@@ -82,6 +93,10 @@ export const useImage = () => {
         data: data?.data || '',
       }
       status.value = 'ready'
+      toast.add({
+        title: '画像生成に成功しました🎉',
+        color: 'success',
+      })
     }
     catch {
       messages.value[loadingIndex] = {
