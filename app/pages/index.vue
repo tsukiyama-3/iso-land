@@ -42,7 +42,14 @@ onMounted(() => {
     })
 
     map.addListener('click', (e: google.maps.MapMouseEvent) => {
-      if (!e.latLng) return
+      if (!e.latLng) {
+        return
+      }
+
+      if (!isInteracting.value) {
+        isInteracting.value = true
+        return
+      }
 
       if (marker.value) {
         marker.value.map = null
