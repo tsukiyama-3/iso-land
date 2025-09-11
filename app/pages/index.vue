@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { useImage } from '~/composables/image'
 
+declare global {
+  interface Window {
+    searchPlaces?: (query: string) => void
+  }
+}
+
 const config = useRuntimeConfig()
 
 const mapRef = ref<HTMLElement | null>(null)
@@ -8,6 +14,8 @@ const marker = ref<any>(null)
 let map: google.maps.Map | null = null
 const isInteracting = ref(false)
 const chatContainerRef = ref<HTMLElement | null>(null)
+const searchQuery = ref('')
+const isSearching = ref(false)
 
 const { prompt, messages, status, isComposing, handleEnter, latLng, onSubmit } = useImage()
 
@@ -23,6 +31,16 @@ watch(messages, () => {
   scrollToBottom()
 }, { deep: true })
 
+const handleSearch = () => {
+  if (window.searchPlaces) {
+    window.searchPlaces(searchQuery.value)
+  }
+}
+
+const clearSearch = () => {
+  searchQuery.value = ''
+}
+
 const { onLoaded } = useScriptGoogleMaps({
   apiKey: config.public.google.apiKey,
 })
@@ -35,6 +53,7 @@ onMounted(() => {
     const maps = await instance.maps
     const { Map } = await maps.importLibrary('maps') as google.maps.MapsLibrary
     const { AdvancedMarkerElement } = await maps.importLibrary('marker') as google.maps.MarkerLibrary
+    const { PlacesService } = await maps.importLibrary('places') as google.maps.PlacesLibrary
 
     map = new Map(mapRef.value, {
       center: { lat: 35.685355, lng: 139.753144 },
@@ -42,6 +61,7 @@ onMounted(() => {
       mapId: '4dd6c17f0750a29a89cda4c8',
       disableDefaultUI: true,
       gestureHandling: 'greedy',
+      clickableIcons: false,
     })
 
     map.addListener('click', (e: google.maps.MapMouseEvent) => {
@@ -73,12 +93,63 @@ onMounted(() => {
     map.addListener('zoom_changed', () => {
       isInteracting.value = true
     })
+
+    const placesService = new PlacesService(map)
+
+    const searchPlaces = (query: string) => {
+      if (!query.trim()) {
+        return
+      }
+
+      isSearching.value = true
+
+      const request = {
+        query: query,
+        fields: ['name', 'geometry', 'formatted_address', 'place_id'],
+        locationBias: map?.getCenter(),
+      }
+
+      placesService.textSearch(request, (results, status) => {
+        isSearching.value = false
+        if (status === google.maps.places.PlacesServiceStatus.OK && results && results.length > 0) {
+          const firstResult = results[0]
+          if (firstResult) {
+            selectSearchResult(firstResult)
+          }
+        }
+      })
+    }
+
+    const selectSearchResult = (place: google.maps.places.PlaceResult) => {
+      if (place.geometry?.location) {
+        const location = place.geometry.location
+        map?.setCenter(location)
+        map?.setZoom(16)
+
+        if (marker.value) {
+          marker.value.map = null
+          marker.value = null
+        }
+
+        marker.value = new AdvancedMarkerElement({
+          map,
+          position: location,
+        })
+        latLng.value = location
+        searchQuery.value = ''
+      }
+    }
+
+    window.searchPlaces = searchPlaces
   })
 })
 
 onMounted(() => {
   const handleDocumentClick = (event: MouseEvent) => {
-    if (mapRef.value && !mapRef.value.contains(event.target as Node)) {
+    const target = event.target as Node
+    const searchInput = document.querySelector('input[name="place"]')
+
+    if (mapRef.value && !mapRef.value.contains(target) && !searchInput?.contains(target)) {
       isInteracting.value = false
     }
   }
@@ -137,10 +208,42 @@ const quickChats = [
           </div>
         </template>
 
-        <div
-          ref="mapRef"
-          :class="[isInteracting ? 'aspect-[4/3]' : 'aspect-[3/1]', 'border border-muted transition-all duration-500 md:h-full w-full md:max-w-[600px] rounded-xl']"
-        />
+        <div class="relative w-full md:max-w-[600px]">
+          <div class="absolute top-2 left-2 right-2 z-10">
+            <div class="relative">
+              <UInput
+                v-model="searchQuery"
+                name="place"
+                placeholder="場所を検索..."
+                class="w-full"
+                size="lg"
+                @keydown.enter="handleSearch"
+              >
+                <template #trailing>
+                  <UButton
+                    v-if="searchQuery"
+                    icon="i-lucide-x"
+                    size="xs"
+                    variant="ghost"
+                    @click="clearSearch"
+                  />
+                  <UButton
+                    v-else
+                    icon="i-lucide-search"
+                    size="xs"
+                    variant="ghost"
+                    @click="handleSearch"
+                  />
+                </template>
+              </UInput>
+            </div>
+          </div>
+
+          <div
+            ref="mapRef"
+            :class="[isInteracting ? 'aspect-[4/3]' : 'aspect-[3/1]', 'border border-muted transition-all duration-500 md:h-full w-full rounded-xl']"
+          />
+        </div>
       </ClientOnly>
 
       <div class="flex flex-col h-full space-y-4 max-w-full">
