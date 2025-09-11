@@ -42,6 +42,16 @@ const clearSearch = () => {
   searchQuery.value = ''
 }
 
+// ドキュメントクリックイベントのハンドラー
+const handleDocumentClick = (event: MouseEvent) => {
+  const target = event.target as Node
+  const searchInput = document.querySelector('input[name="place"]')
+
+  if (mapRef.value && !mapRef.value.contains(target) && !searchInput?.contains(target)) {
+    isInteracting.value = false
+  }
+}
+
 const { onLoaded } = useScriptGoogleMaps({
   apiKey: config.public.google.apiKey,
 })
@@ -143,23 +153,9 @@ onMounted(() => {
 
     window.searchPlaces = searchPlaces
   })
-})
 
-onMounted(() => {
-  const handleDocumentClick = (event: MouseEvent) => {
-    const target = event.target as Node
-    const searchInput = document.querySelector('input[name="place"]')
-
-    if (mapRef.value && !mapRef.value.contains(target) && !searchInput?.contains(target)) {
-      isInteracting.value = false
-    }
-  }
-
+  // ドキュメントクリックイベントの処理
   document.addEventListener('click', handleDocumentClick)
-
-  onUnmounted(() => {
-    document.removeEventListener('click', handleDocumentClick)
-  })
 })
 
 onBeforeRouteLeave(() => {
@@ -171,6 +167,9 @@ onBeforeRouteLeave(() => {
 })
 
 onUnmounted(() => {
+  // ドキュメントクリックイベントのクリーンアップ
+  document.removeEventListener('click', handleDocumentClick)
+
   // 完全なクリーンアップ
   if (marker.value) {
     marker.value.map = null
