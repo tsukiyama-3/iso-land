@@ -15,7 +15,7 @@ const links = ref([
   <UContainer>
     <!-- Hero -->
     <UPageHero
-      description="マップで場所を選び、簡単なプロンプトを入力するだけで、そのランドマークをアイソメトリックな画像を生成しよう"
+      description="マップで好きな場所を選び、簡単なプロンプトを入力するだけで、そのランドマークをアイソメトリックな画像を生成しよう"
       headline="About Service"
       orientation="horizontal"
       :links="links"

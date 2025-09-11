@@ -1,5 +1,22 @@
 <script setup lang="ts">
 const config = useRuntimeConfig()
+
+const items = computed(() => {
+  return [
+    {
+      label: 'TOP',
+      to: '/',
+    },
+    {
+      label: 'About',
+      to: '/about',
+    },
+    {
+      label: 'Gallery',
+      to: '/gallery',
+    },
+  ]
+})
 </script>
 
 <template>
@@ -13,6 +30,16 @@ const config = useRuntimeConfig()
         height="48"
       />
     </template>
+
+    <UNavigationMenu
+      :items="items"
+      variant="link"
+      class="font-bold"
+      :ui="{
+        linkLabel: 'font-bold',
+      }"
+    />
+
     <template #right>
       <div class="hidden md:block">
         <UButton
@@ -36,6 +63,14 @@ const config = useRuntimeConfig()
       </div>
     </template>
     <template #body>
+      <UNavigationMenu
+        :items="items"
+        orientation="vertical"
+        class="-mx-2.5"
+        :ui="{
+          linkLabel: 'font-bold',
+        }"
+      />
       <div class="flex items-center justify-center">
         <UButton
           icon="i-simple-icons-x"
