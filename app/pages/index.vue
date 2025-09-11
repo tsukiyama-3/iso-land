@@ -16,6 +16,7 @@ const isInteracting = ref(false)
 const chatContainerRef = ref<HTMLElement | null>(null)
 const searchQuery = ref('')
 const isSearching = ref(false)
+const isSearchComposing = ref(false)
 
 const { prompt, messages, status, isComposing, handleEnter, latLng, onSubmit } = useImage()
 
@@ -32,7 +33,7 @@ watch(messages, () => {
 }, { deep: true })
 
 const handleSearch = () => {
-  if (window.searchPlaces) {
+  if (window.searchPlaces && !isSearchComposing.value) {
     window.searchPlaces(searchQuery.value)
   }
 }
@@ -217,7 +218,9 @@ const quickChats = [
                 placeholder="場所を検索..."
                 class="w-full"
                 size="lg"
-                @keydown.enter="handleSearch"
+                @keydown.enter.prevent="handleSearch"
+                @compositionstart="isSearchComposing = true"
+                @compositionend="isSearchComposing = false"
               >
                 <template #trailing>
                   <UButton
