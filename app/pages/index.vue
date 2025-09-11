@@ -5,6 +5,7 @@ const config = useRuntimeConfig()
 
 const mapRef = ref<HTMLElement | null>(null)
 const marker = ref<any>(null)
+let map: google.maps.Map | null = null
 const isInteracting = ref(false)
 const chatContainerRef = ref<HTMLElement | null>(null)
 
@@ -28,13 +29,14 @@ const { onLoaded } = useScriptGoogleMaps({
 
 onMounted(() => {
   onLoaded(async (instance) => {
-    if (!mapRef.value) return
+    await nextTick()
+    if (!mapRef.value || map) return
 
     const maps = await instance.maps
     const { Map } = await maps.importLibrary('maps') as google.maps.MapsLibrary
     const { AdvancedMarkerElement } = await maps.importLibrary('marker') as google.maps.MarkerLibrary
 
-    const map = new Map(mapRef.value, {
+    map = new Map(mapRef.value, {
       center: { lat: 35.685355, lng: 139.753144 },
       zoom: 8,
       mapId: '4dd6c17f0750a29a89cda4c8',
@@ -74,6 +76,29 @@ onMounted(() => {
   })
 })
 
+onBeforeRouteLeave(() => {
+  // ページ遷移時はマーカーのみクリーンアップ（マップ状態は保持）
+  if (marker.value) {
+    marker.value.map = null
+    marker.value = null
+  }
+  isInteracting.value = false
+  // latLngは保持する
+})
+
+onUnmounted(() => {
+  // 完全なクリーンアップ
+  if (marker.value) {
+    marker.value.map = null
+    marker.value = null
+  }
+  if (map) {
+    map = null
+  }
+  isInteracting.value = false
+  latLng.value = null
+})
+
 const quickChats = [
   {
     label: 'ゲーム『Minecraft』のスタイルで作成してください。',
@@ -92,24 +117,24 @@ const quickChats = [
 
 <template>
   <UContainer>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:h-[calc(100vh-8rem)]">
       <ClientOnly>
         <template #fallback>
-          <div class="aspect-[3/1] md:aspect-square w-full md:max-w-[600px] rounded-xl border border-muted flex items-center justify-center">
+          <div class="aspect-[3/1] md:h-full w-full md:max-w-[600px] rounded-xl border border-muted flex items-center justify-center">
             <USkeleton class="w-full h-full rounded-xl" />
           </div>
         </template>
 
         <div
           ref="mapRef"
-          :class="[isInteracting ? 'aspect-[4/3]' : 'aspect-[3/1]', 'border border-muted transition-all duration-500 md:aspect-square w-full md:max-w-[600px] rounded-xl']"
+          :class="[isInteracting ? 'aspect-[4/3]' : 'aspect-[3/1]', 'border border-muted transition-all duration-500 md:h-full w-full md:max-w-[600px] rounded-xl']"
         />
       </ClientOnly>
 
-      <div class="flex flex-col h-full space-y-4 aspect-square max-w-full">
+      <div class="flex flex-col h-full space-y-4 max-w-full">
         <div
           ref="chatContainerRef"
-          class="h-[300px] md:h-[536px] overflow-y-auto p-4 space-y-4 border border-gray-200 rounded-xl"
+          class="h-[300px] md:flex-1 overflow-y-auto p-4 space-y-4 border border-gray-200 rounded-xl"
         >
           <div
             v-for="(msg, index) in messages"
