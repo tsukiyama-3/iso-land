@@ -76,14 +76,26 @@ onMounted(() => {
   })
 })
 
+onMounted(() => {
+  const handleDocumentClick = (event: MouseEvent) => {
+    if (mapRef.value && !mapRef.value.contains(event.target as Node)) {
+      isInteracting.value = false
+    }
+  }
+
+  document.addEventListener('click', handleDocumentClick)
+
+  onUnmounted(() => {
+    document.removeEventListener('click', handleDocumentClick)
+  })
+})
+
 onBeforeRouteLeave(() => {
-  // ページ遷移時はマーカーのみクリーンアップ（マップ状態は保持）
   if (marker.value) {
     marker.value.map = null
     marker.value = null
   }
   isInteracting.value = false
-  // latLngは保持する
 })
 
 onUnmounted(() => {
