@@ -155,11 +155,11 @@ const quickChats = [
               class="w-[300px] aspect-square rounded-lg border border-muted"
             />
 
-            <img
+            <NuxtImg
               v-else-if="msg.type === 'image'"
               :src="`data:${msg.mimeType};base64,${msg.data}`"
               class="rounded-lg max-w-[300px] inline-block border border-muted"
-            >
+            />
           </div>
         </div>
 

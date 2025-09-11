@@ -1,15 +1,17 @@
 <script setup lang="ts">
+const config = useRuntimeConfig()
 </script>
 
 <template>
   <UHeader>
     <template #title>
-      <img
-        src="https://res.cloudinary.com/dyoyv8djx/image/upload/v1757515445/iso.land/Group_52_zpwxrz.svg"
+      <NuxtImg
+        provider="cloudinary"
+        :src="`${config.public.cloudinary.baseUrl}/logo_iso-land_shliv5.svg`"
         alt=""
         width="120"
-        height=""
-      >
+        height="48"
+      />
     </template>
     <template #right>
       <div class="hidden md:block">
