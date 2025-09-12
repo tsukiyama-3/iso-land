@@ -200,7 +200,7 @@ const quickChats = [
 
 <template>
   <UContainer>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:h-[calc(100vh-8rem)]">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:h-[calc(100vh-9.25rem)]">
       <ClientOnly>
         <template #fallback>
           <div class="aspect-[3/1] md:h-full w-full md:max-w-[600px] rounded-xl border border-muted flex items-center justify-center">
@@ -251,7 +251,7 @@ const quickChats = [
       <div class="flex flex-col h-full space-y-4 max-w-full">
         <div
           ref="chatContainerRef"
-          class="h-[300px] md:flex-1 overflow-y-auto p-4 space-y-4 border border-gray-200 rounded-xl"
+          class="md:flex-1 h-[300px] md:h-[auto] md:max-h-[calc(100vh-17.5rem-3px)] overflow-y-scroll p-4 space-y-4 border border-gray-200 rounded-xl"
         >
           <div
             v-for="(msg, index) in messages"
