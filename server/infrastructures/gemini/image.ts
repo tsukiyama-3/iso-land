@@ -1,16 +1,5 @@
-// import { GoogleGenAI } from '@google/genai'
-// import { Buffer } from 'node:buffer'
-
 export const generateImage = async (body: { prompt: string, latLng: google.maps.MapMouseEvent['latLng'] }) => {
   const config = useRuntimeConfig()
-  // const ai = new GoogleGenAI({
-  //   apiKey: config.gemini.apiKey,
-  // })
-
-  // const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${body.latLng?.lat},${body.latLng?.lng}&zoom=16&size=600x600&markers=color:red%7C${body.latLng?.lat},${body.latLng?.lng}&key=${config.public.google.apiKey}`
-  // const arrayBuffer = await $fetch<ArrayBuffer>(staticMapUrl, { responseType: 'arrayBuffer' })
-  // const buffer = Buffer.from(arrayBuffer)
-  // const base64 = buffer.toString('base64')
 
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
@@ -42,24 +31,6 @@ export const generateImage = async (body: { prompt: string, latLng: google.maps.
 
   console.log(response, 'response')
 
-  // const response = await ai.models.generateContent({
-  //   model: 'gemini-2.5-flash-image-preview',
-  //   contents: [
-  //     {
-  //       role: 'user',
-  //       parts: [
-  //         { text: `${config.basePrompt.replace(/\\n/g, '\n')}${body.prompt}` },
-  //         {
-  //           inlineData: {
-  //             mimeType: 'image/png',
-  //             data: base64,
-  //           },
-  //         },
-  //       ],
-  //     },
-  //   ],
-  // })
-
   const result = await response.json()
 
   const safeResult = JSON.parse(JSON.stringify(result, (key, value) => {
@@ -86,16 +57,6 @@ export const generateImage = async (body: { prompt: string, latLng: google.maps.
         data: base64Data, // ← Base64データだけ切り出し
         content: '',
       }
-    }
-  }
-
-  if (typeof message?.content === 'string' && message.content.length > 0) {
-    return {
-      role: 'assistant',
-      type: 'text',
-      content: message.content,
-      mimeType: 'text/plain',
-      data: '',
     }
   }
 
