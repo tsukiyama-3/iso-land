@@ -97,7 +97,7 @@ const { onLoaded } = useScriptGoogleMaps({
 })
 
 onMounted(() => {
-  onLoaded(async (instance: { maps: any }) => {
+  onLoaded(async (instance: { maps: unknown }) => {
     await nextTick()
     if (!mapRef.value || map) return
 

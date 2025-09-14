@@ -84,8 +84,6 @@ export const useImage = () => {
         },
       })
 
-      console.log(data, 'data')
-
       // ローディングを置き換え
       messages.value[loadingIndex] = {
         role: 'assistant',
@@ -102,19 +100,29 @@ export const useImage = () => {
         color: 'success',
       })
     }
-    catch {
+    catch (error: any) {
       messages.value[loadingIndex] = {
         role: 'assistant',
         type: 'error',
-        content: 'エラーが発生しました。',
+        content: error.data?.message || 'エラーが発生しました。',
         mimeType: '',
         data: '',
-      }
+      } as AssistantTextMessage
       status.value = 'error'
-      toast.add({
-        title: 'エラーが発生しました。もう一度お試しください。',
-        color: 'error',
-      })
+
+      // エラーメッセージの表示
+      if (error.statusCode === 429) {
+        toast.add({
+          title: error.data?.message || '本日の使用回数制限に達しました。',
+          color: 'error',
+        })
+      }
+      else {
+        toast.add({
+          title: error.data?.message || 'エラーが発生しました。もう一度お試しください。',
+          color: 'error',
+        })
+      }
     }
   }
 
