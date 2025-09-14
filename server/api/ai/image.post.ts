@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
   try {
     const currentCount = (await kv.get(rateLimitKey) as number) || 0
 
-    if (currentCount >= 105) {
+    if (currentCount >= 5) {
       throw createError({
         statusCode: 429,
         statusMessage: '1日の使用回数制限（5回）に達しました。時間をおいてから再度お試しください。',
