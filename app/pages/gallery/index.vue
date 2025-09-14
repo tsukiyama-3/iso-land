@@ -44,7 +44,7 @@ const selectedImage = ref<ImageData | null>(null)
 const currentPage = ref(1)
 const totalPages = ref(0)
 const total = ref(0)
-const limit = 3
+const limit = 30
 
 // いいね状態管理
 const isLiking = ref(false)
@@ -86,7 +86,7 @@ const downloadImage = async (imageUrl: string) => {
 }
 
 // 画像シェア機能
-const shareImage = async (imageUrl: string, prompt: string) => {
+const shareImage = async (imageUrl: string) => {
   try {
     const response = await fetch(imageUrl)
     const blob = await response.blob()
@@ -97,26 +97,13 @@ const shareImage = async (imageUrl: string, prompt: string) => {
 
       if (navigator.canShare({ files: [file] })) {
         await navigator.share({
-          title: 'AIが生成したアイソメトリック画像',
-          text: prompt,
+          text: 'isometric.land #iso_land',
           files: [file],
         })
         return
       }
+      return
     }
-
-    // Web Share APIが利用できない場合は、画像をダウンロード
-    const link = document.createElement('a')
-    link.href = imageUrl
-    link.download = 'iso-land-image.png'
-    link.click()
-
-    // トースト通知
-    const toast = useToast()
-    toast.add({
-      title: '画像をダウンロードしました',
-      color: 'success',
-    })
   }
   catch (error) {
     console.error('シェアエラー:', error)
@@ -346,7 +333,7 @@ onMounted(() => {
                       icon="i-lucide-share"
                       class="cursor-pointer lg:hidden"
                       size="xl"
-                      @click="shareImage(image.url, image.prompt)"
+                      @click="shareImage(image.url)"
                     />
                     <UButton
                       variant="subtle"

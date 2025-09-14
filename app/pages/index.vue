@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useImage } from '~/composables/image'
+import { useDevice } from '~/composables/device'
 
 declare global {
   interface Window {
@@ -8,6 +9,7 @@ declare global {
 }
 
 const config = useRuntimeConfig()
+const { isDesktop } = useDevice()
 
 const mapRef = ref<HTMLElement | null>(null)
 const marker = ref<google.maps.marker.AdvancedMarkerElement | null>(null)
@@ -84,7 +86,9 @@ const handleDocumentClick = (event: MouseEvent) => {
   const searchInput = document.querySelector('input[name="place"]')
 
   if (mapRef.value && !mapRef.value.contains(target) && !searchInput?.contains(target)) {
-    isInteracting.value = false
+    if (!isDesktop.value) {
+      isInteracting.value = false
+    }
   }
 }
 
@@ -116,7 +120,7 @@ onMounted(() => {
         return
       }
 
-      if (!isInteracting.value) {
+      if (!isDesktop.value && !isInteracting.value) {
         isInteracting.value = true
         return
       }
@@ -131,14 +135,20 @@ onMounted(() => {
         position: e.latLng,
       })
       latLng.value = e.latLng
-      isInteracting.value = false
+      if (!isDesktop.value) {
+        isInteracting.value = false
+      }
     })
     map.addListener('dragstart', () => {
-      isInteracting.value = true
+      if (!isDesktop.value) {
+        isInteracting.value = true
+      }
     })
 
     map.addListener('zoom_changed', () => {
-      isInteracting.value = true
+      if (!isDesktop.value) {
+        isInteracting.value = true
+      }
     })
 
     const placesService = new PlacesService(map)
@@ -199,7 +209,9 @@ onBeforeRouteLeave(() => {
     marker.value.map = null
     marker.value = null
   }
-  isInteracting.value = false
+  if (!isDesktop.value) {
+    isInteracting.value = false
+  }
 })
 
 onUnmounted(() => {
@@ -214,7 +226,9 @@ onUnmounted(() => {
   if (map) {
     map = null
   }
-  isInteracting.value = false
+  if (!isDesktop.value) {
+    isInteracting.value = false
+  }
   latLng.value = null
 })
 
@@ -279,7 +293,7 @@ const quickChats = [
 
           <div
             ref="mapRef"
-            :class="[isInteracting ? 'aspect-[4/3]' : 'aspect-[3/1]', 'border border-muted transition-all duration-500 md:h-full w-full rounded-xl']"
+            :class="[!isDesktop && isInteracting ? 'aspect-[4/3]' : 'aspect-[3/1]', 'border border-muted transition-all duration-500 md:h-full w-full rounded-xl']"
           />
         </div>
       </ClientOnly>
