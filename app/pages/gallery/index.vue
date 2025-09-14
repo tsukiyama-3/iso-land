@@ -244,6 +244,22 @@
               </UButton>
               <UButton
                 variant="outline"
+                icon="i-lucide-download"
+                color="green"
+                @click="downloadImage(selectedImage.url, selectedImage.prompt)"
+              >
+                ダウンロード
+              </UButton>
+              <UButton
+                variant="outline"
+                icon="i-simple-icons-twitter"
+                color="blue"
+                @click="shareToTwitter(selectedImage.url, selectedImage.prompt)"
+              >
+                Twitter
+              </UButton>
+              <UButton
+                variant="outline"
                 icon="i-lucide-copy"
                 @click="copyImageUrl(selectedImage.url)"
               >
@@ -284,6 +300,86 @@ const selectedImage = ref<any>(null)
 
 // いいね状態管理
 const isLiking = ref(false)
+
+// 画像ダウンロード機能
+const downloadImage = async (imageUrl: string, prompt: string) => {
+  try {
+    const response = await fetch(imageUrl)
+    const blob = await response.blob()
+
+    // ファイル名を生成（プロンプトから安全なファイル名を作成）
+    const safePrompt = prompt.replace(/[^a-zA-Z0-9\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/g, '_').substring(0, 30)
+    const fileName = `isometric_${safePrompt}_${Date.now()}.png`
+
+    // ダウンロードリンクを作成
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = fileName
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+
+    // トースト通知
+    const toast = useToast()
+    toast.add({
+      title: '画像をダウンロードしました',
+      color: 'success',
+    })
+  }
+  catch (error) {
+    console.error('ダウンロードエラー:', error)
+    const toast = useToast()
+    toast.add({
+      title: 'ダウンロードに失敗しました',
+      color: 'error',
+    })
+  }
+}
+
+// Twitterシェア機能
+const shareToTwitter = async (imageUrl: string, prompt: string) => {
+  try {
+    // 画像をダウンロード
+    const response = await fetch(imageUrl)
+    const blob = await response.blob()
+
+    // Web Share APIが利用可能かチェック
+    if (navigator.share && navigator.canShare) {
+      const file = new File([blob], 'isometric-image.png', { type: 'image/png' })
+
+      if (navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: 'AIが生成したアイソメトリック画像',
+          text: prompt,
+          files: [file],
+        })
+        return
+      }
+    }
+
+    // Web Share APIが利用できない場合は、画像をダウンロードしてからTwitterを開く
+    const link = document.createElement('a')
+    link.href = imageUrl
+    link.download = 'isometric-image.png'
+    link.click()
+
+    // 少し待ってからTwitterを開く
+    setTimeout(() => {
+      const text = `AIが生成したアイソメトリック画像: ${prompt}\n\n画像をダウンロードして添付してください:`
+      const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`
+      window.open(url, '_blank', 'width=550,height=420')
+    }, 1000)
+  }
+  catch (error) {
+    console.error('シェアエラー:', error)
+    // エラーの場合は従来の方法でTwitterを開く
+    const text = `AIが生成したアイソメトリック画像: ${prompt}`
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(imageUrl)}`
+    window.open(url, '_blank', 'width=550,height=420')
+  }
+}
 
 // 画像一覧を取得する関数
 const fetchImages = async () => {
