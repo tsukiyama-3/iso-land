@@ -22,11 +22,12 @@ export const generateImage = async (body: { prompt: string, latLng: google.maps.
 
       // Vercel KVにメタデータを保存
       await kv.set(`image:${id}`, {
-        url, // 公開 URL
+        url,
         prompt: body.prompt,
         lat: body.latLng?.lat,
         lng: body.latLng?.lng,
         createdAt: new Date().toISOString(),
+        likes: 0,
       })
 
       // レスポンスに保存されたURLとIDを追加

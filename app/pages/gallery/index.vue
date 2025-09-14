@@ -207,6 +207,27 @@
                   {{ selectedImage.id }}
                 </p>
               </div>
+
+              <div>
+                <h4 class="font-medium text-gray-900 mb-2">
+                  いいね数
+                </h4>
+                <div class="flex items-center gap-2">
+                  <span class="text-lg font-semibold text-gray-700">
+                    {{ selectedImage.likes || 0 }}
+                  </span>
+                  <UButton
+                    :loading="isLiking"
+                    size="sm"
+                    variant="outline"
+                    icon="i-lucide-heart"
+                    color="error"
+                    @click="likeImage(selectedImage.id)"
+                  >
+                    いいね
+                  </UButton>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -261,6 +282,9 @@ const error = ref<string | null>(null)
 const isModalOpen = ref(false)
 const selectedImage = ref<any>(null)
 
+// いいね状態管理
+const isLiking = ref(false)
+
 // 画像一覧を取得する関数
 const fetchImages = async () => {
   try {
@@ -300,6 +324,48 @@ const openModal = (image: any) => {
 const closeModal = () => {
   isModalOpen.value = false
   selectedImage.value = null
+}
+
+// いいね機能
+const likeImage = async (imageId: string) => {
+  try {
+    isLiking.value = true
+
+    const response = await $fetch(`/api/images/${imageId}/like`, {
+      method: 'POST',
+    })
+
+    if (response.success) {
+      // モーダル内のいいね数を更新
+      if (selectedImage.value && selectedImage.value.id === imageId) {
+        selectedImage.value.likes = response.likes
+      }
+
+      // 画像一覧のいいね数も更新
+      const imageIndex = images.value.findIndex(img => img.id === imageId)
+      if (imageIndex !== -1) {
+        images.value[imageIndex].likes = response.likes
+      }
+
+      // トースト通知
+      const toast = useToast()
+      toast.add({
+        title: 'いいねしました！',
+        color: 'success',
+      })
+    }
+  }
+  catch (err) {
+    console.error('いいねエラー:', err)
+    const toast = useToast()
+    toast.add({
+      title: 'いいねに失敗しました',
+      color: 'error',
+    })
+  }
+  finally {
+    isLiking.value = false
+  }
 }
 
 // URLをクリップボードにコピーする関数
