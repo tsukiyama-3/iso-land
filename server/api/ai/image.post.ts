@@ -3,6 +3,22 @@ import { generateImage } from '~~/server/domains/repositories/image'
 import { kv } from '@vercel/kv'
 
 export default defineEventHandler(async (event) => {
+  // モックモードの場合はモックデータを返す
+  // if (true) {
+  //   return new Promise((resolve) => {
+  //     setTimeout(() => {
+  //       resolve({
+  //         content: 'モック画像が生成されました',
+  //         mimeType: 'image/png',
+  //         type: 'image',
+  //         data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+  //         savedUrl: 'https://picsum.photos/512/512?random=' + Date.now(),
+  //         savedId: 'mock_' + Date.now(),
+  //       })
+  //     }, 2000)
+  //   })
+  // }
+
   // レート制限チェック（一日5回まで）
   const clientIP = getHeader(event, 'x-forwarded-for') || getHeader(event, 'x-real-ip') || 'unknown'
   const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD形式

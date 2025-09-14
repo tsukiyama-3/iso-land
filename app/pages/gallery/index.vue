@@ -134,6 +134,7 @@ onMounted(() => {
               <UButton
                 color="neutral"
                 variant="subtle"
+                as="div"
                 :ui="{
                   base: 'p-0 overflow-hidden border border-muted',
                 }"

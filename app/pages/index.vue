@@ -339,48 +339,49 @@ const quickChats = [
                 <UButton
                   color="neutral"
                   variant="subtle"
+                  as="div"
                   :ui="{
                     base: 'p-0 overflow-hidden border border-muted',
                   }"
                 >
                   <div
-                    class="max-w-[300px] overflow-hidden cursor-pointer hover:opacity-80 transition-opacity duration-200"
+                    class="max-w-[300px] md:max-w-[300px] w-full overflow-hidden cursor-pointer hover:opacity-80 transition-opacity duration-200"
                   >
                     <img
                       :src="msg.savedUrl"
                       :alt="'生成された画像'"
-                      class="rounded-lg w-full h-auto border border-muted"
+                      class="w-full h-auto border border-muted rounded-[5px]"
                     >
                   </div>
                 </UButton>
 
                 <template #content>
-                  <div>
+                  <div class="flex flex-col">
                     <img
                       :src="msg.savedUrl"
                       :alt="'生成された画像'"
-                      class="w-full h-full object-cover aspect-square"
+                      class="w-full h-auto object-cover rounded-t-lg"
                     >
-                    <div class="p-4 flex gap-2">
+                    <div class="p-4 flex gap-2 justify-center">
                       <UButton
                         variant="subtle"
                         icon="i-lucide-download"
                         class="cursor-pointer hidden lg:flex"
-                        size="xl"
+                        size="lg"
                         @click="downloadImage(msg.savedUrl)"
                       />
                       <UButton
                         variant="subtle"
                         icon="i-lucide-share"
                         class="cursor-pointer lg:hidden"
-                        size="xl"
+                        size="lg"
                         @click="shareImage(msg.savedUrl)"
                       />
                       <UButton
                         v-if="msg.savedId"
                         variant="subtle"
                         icon="i-lucide-heart"
-                        size="xl"
+                        size="lg"
                         class="cursor-pointer"
                         @click="likeImage(msg.savedId)"
                       />
