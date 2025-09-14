@@ -9,7 +9,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       google: {
-        apiKey: '',
+        apiKey: process.env.NUXT_PUBLIC_GOOGLE_API_KEY || '',
       },
       cloudinary: {
         baseUrl: 'https://res.cloudinary.com/dyoyv8djx/image/upload/v1757603203/iso.land',
@@ -22,6 +22,9 @@ export default defineNuxtConfig({
       apiKey: '',
     },
     basePrompt: '',
+    kvRestApiUrl: '',
+    kvRestApiToken: '',
+    blobReadWriteToken: '',
   },
   compatibilityDate: '2025-07-15',
   eslint: {
