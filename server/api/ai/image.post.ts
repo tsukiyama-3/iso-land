@@ -17,7 +17,6 @@ export default defineEventHandler(async (event) => {
         statusMessage: '1日の使用回数制限（5回）に達しました。時間をおいてから再度お試しください。',
       })
     }
-
     const body = await readBody<{ prompt: string, latLng: google.maps.MapMouseEvent['latLng'] }>(event)
 
     // プロンプトの基本検証
