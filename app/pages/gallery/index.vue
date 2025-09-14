@@ -1,3 +1,146 @@
+<script setup lang="ts">
+// ページのメタデータ
+definePageMeta({
+  title: '画像ギャラリー',
+})
+
+// 状態管理
+const images = ref<any[]>([])
+const isLoading = ref(true)
+const error = ref<string | null>(null)
+
+// モーダル状態管理
+const isModalOpen = ref(false)
+const selectedImage = ref<any>(null)
+
+// いいね状態管理
+const isLiking = ref(false)
+
+// 画像ダウンロード機能
+const downloadImage = async (imageUrl: string) => {
+  try {
+    const response = await fetch(imageUrl)
+    const blob = await response.blob()
+
+    // ファイル名を生成
+    const fileName = `isometric_image_${Date.now()}.png`
+
+    // ダウンロードリンクを作成
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = fileName
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+
+    // トースト通知
+    const toast = useToast()
+    toast.add({
+      title: '画像をダウンロードしました',
+      color: 'success',
+    })
+  }
+  catch (error) {
+    console.error('ダウンロードエラー:', error)
+    const toast = useToast()
+    toast.add({
+      title: 'ダウンロードに失敗しました',
+      color: 'error',
+    })
+  }
+}
+
+// 画像一覧を取得する関数
+const fetchImages = async () => {
+  try {
+    isLoading.value = true
+    error.value = null
+    const response = await $fetch('/api/images')
+    images.value = response || []
+  }
+  catch (err) {
+    console.error('画像一覧取得エラー:', err)
+    error.value = '画像一覧の取得に失敗しました'
+  }
+  finally {
+    isLoading.value = false
+  }
+}
+
+// 日付をフォーマットする関数
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString)
+  return date.toLocaleString('ja-JP', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+// モーダルを開く関数
+const openModal = (image: any) => {
+  selectedImage.value = image
+  isModalOpen.value = true
+}
+
+// モーダルを閉じる関数
+const closeModal = () => {
+  isModalOpen.value = false
+  selectedImage.value = null
+}
+
+// いいね機能
+const likeImage = async (imageId: string) => {
+  try {
+    isLiking.value = true
+
+    const response = await $fetch(`/api/images/${imageId}/like`, {
+      method: 'POST',
+    })
+
+    if (response.success) {
+      // モーダル内のいいね数を更新
+      if (selectedImage.value && selectedImage.value.id === imageId) {
+        selectedImage.value.likes = response.likes
+      }
+
+      // 画像一覧のいいね数も更新
+      const imageIndex = images.value.findIndex(img => img.id === imageId)
+      if (imageIndex !== -1) {
+        images.value[imageIndex].likes = response.likes
+      }
+
+      // トースト通知
+      const toast = useToast()
+      toast.add({
+        title: 'いいねしました！',
+        color: 'success',
+      })
+    }
+  }
+  catch (err) {
+    console.error('いいねエラー:', err)
+    const toast = useToast()
+    toast.add({
+      title: 'いいねに失敗しました',
+      color: 'error',
+    })
+  }
+  finally {
+    isLiking.value = false
+  }
+}
+
+// ページマウント時に画像一覧を取得
+onMounted(() => {
+  fetchImages()
+})
+</script>
+
 <template>
   <UContainer class="py-8">
     <div class="max-w-6xl mx-auto">
@@ -109,7 +252,6 @@
       <!-- モーダル -->
       <UModal
         v-model="isModalOpen"
-        :ui="{ width: 'sm:max-w-2xl' }"
       >
         <UCard v-if="selectedImage">
           <template #header>
@@ -118,7 +260,7 @@
                 画像詳細
               </h3>
               <UButton
-                color="gray"
+                color="primary"
                 variant="ghost"
                 icon="i-lucide-x"
                 @click="closeModal"
@@ -245,25 +387,10 @@
               <UButton
                 variant="outline"
                 icon="i-lucide-download"
-                color="green"
-                @click="downloadImage(selectedImage.url, selectedImage.prompt)"
+                color="primary"
+                @click="downloadImage(selectedImage.url)"
               >
                 ダウンロード
-              </UButton>
-              <UButton
-                variant="outline"
-                icon="i-simple-icons-twitter"
-                color="blue"
-                @click="shareToTwitter(selectedImage.url, selectedImage.prompt)"
-              >
-                Twitter
-              </UButton>
-              <UButton
-                variant="outline"
-                icon="i-lucide-copy"
-                @click="copyImageUrl(selectedImage.url)"
-              >
-                URLをコピー
               </UButton>
             </div>
           </template>
@@ -282,206 +409,3 @@
     </div>
   </UContainer>
 </template>
-
-<script setup lang="ts">
-// ページのメタデータ
-definePageMeta({
-  title: '画像ギャラリー',
-})
-
-// 状態管理
-const images = ref<any[]>([])
-const isLoading = ref(true)
-const error = ref<string | null>(null)
-
-// モーダル状態管理
-const isModalOpen = ref(false)
-const selectedImage = ref<any>(null)
-
-// いいね状態管理
-const isLiking = ref(false)
-
-// 画像ダウンロード機能
-const downloadImage = async (imageUrl: string, prompt: string) => {
-  try {
-    const response = await fetch(imageUrl)
-    const blob = await response.blob()
-
-    // ファイル名を生成（プロンプトから安全なファイル名を作成）
-    const safePrompt = prompt.replace(/[^a-zA-Z0-9\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/g, '_').substring(0, 30)
-    const fileName = `isometric_${safePrompt}_${Date.now()}.png`
-
-    // ダウンロードリンクを作成
-    const url = window.URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = fileName
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    window.URL.revokeObjectURL(url)
-
-    // トースト通知
-    const toast = useToast()
-    toast.add({
-      title: '画像をダウンロードしました',
-      color: 'success',
-    })
-  }
-  catch (error) {
-    console.error('ダウンロードエラー:', error)
-    const toast = useToast()
-    toast.add({
-      title: 'ダウンロードに失敗しました',
-      color: 'error',
-    })
-  }
-}
-
-// Twitterシェア機能
-const shareToTwitter = async (imageUrl: string, prompt: string) => {
-  try {
-    // 画像をダウンロード
-    const response = await fetch(imageUrl)
-    const blob = await response.blob()
-
-    // Web Share APIが利用可能かチェック
-    if (navigator.share && navigator.canShare) {
-      const file = new File([blob], 'isometric-image.png', { type: 'image/png' })
-
-      if (navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          title: 'AIが生成したアイソメトリック画像',
-          text: prompt,
-          files: [file],
-        })
-        return
-      }
-    }
-
-    // Web Share APIが利用できない場合は、画像をダウンロードしてからTwitterを開く
-    const link = document.createElement('a')
-    link.href = imageUrl
-    link.download = 'isometric-image.png'
-    link.click()
-
-    // 少し待ってからTwitterを開く
-    setTimeout(() => {
-      const text = `AIが生成したアイソメトリック画像: ${prompt}\n\n画像をダウンロードして添付してください:`
-      const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`
-      window.open(url, '_blank', 'width=550,height=420')
-    }, 1000)
-  }
-  catch (error) {
-    console.error('シェアエラー:', error)
-    // エラーの場合は従来の方法でTwitterを開く
-    const text = `AIが生成したアイソメトリック画像: ${prompt}`
-    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(imageUrl)}`
-    window.open(url, '_blank', 'width=550,height=420')
-  }
-}
-
-// 画像一覧を取得する関数
-const fetchImages = async () => {
-  try {
-    isLoading.value = true
-    error.value = null
-    const response = await $fetch('/api/images')
-    images.value = response || []
-  }
-  catch (err) {
-    console.error('画像一覧取得エラー:', err)
-    error.value = '画像一覧の取得に失敗しました'
-  }
-  finally {
-    isLoading.value = false
-  }
-}
-
-// 日付をフォーマットする関数
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString)
-  return date.toLocaleString('ja-JP', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
-// モーダルを開く関数
-const openModal = (image: any) => {
-  selectedImage.value = image
-  isModalOpen.value = true
-}
-
-// モーダルを閉じる関数
-const closeModal = () => {
-  isModalOpen.value = false
-  selectedImage.value = null
-}
-
-// いいね機能
-const likeImage = async (imageId: string) => {
-  try {
-    isLiking.value = true
-
-    const response = await $fetch(`/api/images/${imageId}/like`, {
-      method: 'POST',
-    })
-
-    if (response.success) {
-      // モーダル内のいいね数を更新
-      if (selectedImage.value && selectedImage.value.id === imageId) {
-        selectedImage.value.likes = response.likes
-      }
-
-      // 画像一覧のいいね数も更新
-      const imageIndex = images.value.findIndex(img => img.id === imageId)
-      if (imageIndex !== -1) {
-        images.value[imageIndex].likes = response.likes
-      }
-
-      // トースト通知
-      const toast = useToast()
-      toast.add({
-        title: 'いいねしました！',
-        color: 'success',
-      })
-    }
-  }
-  catch (err) {
-    console.error('いいねエラー:', err)
-    const toast = useToast()
-    toast.add({
-      title: 'いいねに失敗しました',
-      color: 'error',
-    })
-  }
-  finally {
-    isLiking.value = false
-  }
-}
-
-// URLをクリップボードにコピーする関数
-const copyImageUrl = async (url: string) => {
-  try {
-    await navigator.clipboard.writeText(url)
-    // トースト通知を表示（Nuxt UIのトースト機能を使用）
-    const toast = useToast()
-    toast.add({
-      title: 'URLをコピーしました',
-      color: 'success',
-    })
-  }
-  catch (err) {
-    console.error('コピーに失敗:', err)
-  }
-}
-
-// ページマウント時に画像一覧を取得
-onMounted(() => {
-  fetchImages()
-})
-</script>
