@@ -132,8 +132,9 @@ onMounted(() => {
   <UContainer>
     <UPageHeader
       headline="Gallery"
-      title="みんなが作った画像"
-      description=""
+      title="みんなの作品"
+      description="ユーザーが生成したアイソメトリックな街のイラストを集めたギャラリーです。気に入った画像はダウンロードやシェアもできます。"
+      class="text-left"
     />
 
     <UBreadcrumb
@@ -211,14 +212,28 @@ onMounted(() => {
                   :alt="image.prompt"
                   class="w-full h-full object-cover aspect-square"
                 >
-                <div class="p-4">
+                <div class="p-4 flex">
                   <UButton
                     variant="subtle"
                     icon="i-lucide-download"
+                    size="xl"
+                    class="block"
                     @click="downloadImage(image.url)"
-                  >
-                    Download
-                  </UButton>
+                  />
+                  <UButton
+                    variant="subtle"
+                    icon="i-lucide-share"
+                    class="block lg:hidden"
+                    size="xl"
+                    @click="downloadImage(image.url)"
+                  />
+                  <UButton
+                    variant="subtle"
+                    icon="i-lucide-heart"
+                    size="xl"
+                    class="hidden lg:block"
+                    @click="likeImage(image.id)"
+                  />
                 </div>
               </div>
             </template>
