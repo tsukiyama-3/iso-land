@@ -101,10 +101,13 @@ export const useImage = () => {
       })
     }
     catch (error: any) {
+      // エラーメッセージを取得（複数のパターンに対応）
+      const errorMessage = error.data?.message || error.message || error.data?.statusMessage || 'エラーが発生しました。'
+
       messages.value[loadingIndex] = {
         role: 'assistant',
         type: 'error',
-        content: error.data?.message || 'エラーが発生しました。',
+        content: errorMessage,
         mimeType: '',
         data: '',
       } as AssistantTextMessage
@@ -113,13 +116,19 @@ export const useImage = () => {
       // エラーメッセージの表示
       if (error.statusCode === 429) {
         toast.add({
-          title: error.data?.message || '本日の使用回数制限に達しました。',
+          title: errorMessage,
           color: 'error',
+        })
+      }
+      else if (error.statusCode === 402) {
+        toast.add({
+          title: errorMessage,
+          color: 'warning',
         })
       }
       else {
         toast.add({
-          title: error.data?.message || 'エラーが発生しました。もう一度お試しください。',
+          title: errorMessage,
           color: 'error',
         })
       }

@@ -342,6 +342,23 @@ const quickChats = [
               }"
             />
 
+            <UChatMessage
+              v-else-if="msg.type === 'error'"
+              :id="'1'"
+              variant="soft"
+              role="system"
+              side="left"
+              :parts="[
+                {
+                  type: 'text',
+                  text: msg.content ?? 'エラーが発生しました。',
+                },
+              ]"
+              :ui="{
+                content: 'border border-red-200 bg-red-50',
+              }"
+            />
+
             <USkeleton
               v-else-if="msg.type ==='loading'"
               class="w-[300px] aspect-square rounded-lg border border-muted"

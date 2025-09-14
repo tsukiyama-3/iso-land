@@ -33,8 +33,6 @@ export const generateImage = async (body: { prompt: string, latLng: google.maps.
 
   // クレジット不足エラーの場合の例外処理
   if (!response.ok) {
-    const errorResult = await response.json()
-
     if (response.status === 402) {
       throw new Error(`開発者の資金がなくなりました。`)
     }
