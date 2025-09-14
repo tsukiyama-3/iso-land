@@ -234,13 +234,13 @@ onUnmounted(() => {
 
 const quickChats = [
   {
-    label: 'ゲーム『Minecraft』のスタイルで作成してください。',
-  },
-  {
     label: '『LEGO』のスタイルで作成してください。',
   },
   {
-    label: 'ゲーム『Theme Park』のスタイルで作成してください。',
+    label: 'ゲーム『Minecraft』のスタイルで作成してください。',
+  },
+  {
+    label: 'SF映画『ブレードランナー』のスタイルで作成してください。',
   },
   {
     label: 'ゲーム『Pokemon』のスタイルで作成してください。',
@@ -408,8 +408,12 @@ const quickChats = [
             :status="status"
             variant="subtle"
             class="rounded-xl"
-            placeholder="マインクラフト風にしてください。"
+            placeholder="『LEGO』のスタイルで作成してください。"
             :disabled="status === 'submitted' || status === 'streaming'"
+            :ui="{
+              base: 'text-sm md:text-base p-0',
+              body: 'items-center',
+            }"
             @keydown.enter.prevent="handleEnter"
             @compositionstart="isComposing = true"
             @compositionend="isComposing = false"
@@ -429,7 +433,7 @@ const quickChats = [
               :key="quickChat.label"
               :label="quickChat.label"
               size="md"
-              color="primary"
+              color="neutral"
               variant="subtle"
               class="rounded-full shrink-0"
               @click="prompt = quickChat.label"

@@ -29,8 +29,6 @@ export const generateImage = async (body: { prompt: string, latLng: google.maps.
     }),
   })
 
-  console.log(response, 'response')
-
   // クレジット不足エラーの場合の例外処理
   if (!response.ok) {
     if (response.status === 402) {
@@ -41,16 +39,6 @@ export const generateImage = async (body: { prompt: string, latLng: google.maps.
   }
 
   const result = await response.json()
-
-  const safeResult = JSON.parse(JSON.stringify(result, (key, value) => {
-    if (typeof value === 'string' && value.startsWith('data:image')) {
-      return value.slice(0, 50) + '...<omitted>'
-    }
-    return value
-  }, 2))
-
-  console.log('--- OpenRouter response ---')
-  console.dir(safeResult, { depth: null })
 
   const message = result.choices?.[0]?.message
 

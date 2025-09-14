@@ -35,7 +35,7 @@ export const useImage = () => {
     {
       role: 'assistant',
       type: 'text',
-      content: 'ようこそ',
+      content: '1日5回まで画像を生成できます。画像生成には10秒ほどかかります。',
     },
   ])
 
