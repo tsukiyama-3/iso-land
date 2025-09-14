@@ -24,6 +24,30 @@ type AssistantImageMessage = {
 
 type ChatMessage = UserMessage | AssistantTextMessage | AssistantImageMessage
 
+// ギャラリー用の型定義
+export interface ImageData {
+  id: string
+  url: string
+  prompt: string
+  latitude: number
+  longitude: number
+  createdAt: string
+  likes: number
+}
+
+export interface ImagesResponse {
+  images: ImageData[]
+  total: number
+  page: number
+  limit: number
+  totalPages: number
+}
+
+export interface LikeResponse {
+  success: boolean
+  likes: number
+}
+
 export const useImage = () => {
   const toast = useToast()
   const prompt = ref('')
@@ -147,4 +171,184 @@ export const useImage = () => {
   }
 
   return { prompt, messages, onSubmit, status, isComposing, handleEnter, latLng }
+}
+
+// ギャラリー用のcomposable
+export const useImages = () => {
+  // 状態管理
+  const images = ref<ImageData[]>([])
+  const isLoading = ref(true)
+  const error = ref<string | null>(null)
+  const selectedImage = ref<ImageData | null>(null)
+
+  // ページネーション状態管理
+  const currentPage = ref(1)
+  const totalPages = ref(0)
+  const total = ref(0)
+  const limit = 30
+
+  // いいね状態管理
+  const isLiking = ref(false)
+
+  // 画像一覧を取得する関数
+  const fetchImages = async (page: number = 1) => {
+    try {
+      isLoading.value = true
+      error.value = null
+      const response = await $fetch<ImagesResponse>(`/api/images?page=${page}&limit=${limit}`)
+
+      if (response) {
+        images.value = response.images || []
+        currentPage.value = response.page || 1
+        totalPages.value = response.totalPages || 0
+        total.value = response.total || 0
+      }
+    }
+    catch (err) {
+      console.error('画像一覧取得エラー:', err)
+      error.value = '画像一覧の取得に失敗しました'
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
+  // ページ変更時の処理
+  const onPageChange = (page: number) => {
+    currentPage.value = page
+    fetchImages(page)
+  }
+
+  // いいね機能
+  const likeImage = async (imageId: string) => {
+    try {
+      isLiking.value = true
+
+      const response = await $fetch<LikeResponse>(`/api/images/${imageId}/like`, {
+        method: 'POST',
+      })
+
+      if (response.success) {
+        // モーダル内のいいね数を更新
+        if (selectedImage.value && selectedImage.value.id === imageId) {
+          selectedImage.value.likes = response.likes
+        }
+
+        // 画像一覧のいいね数も更新
+        const imageIndex = images.value.findIndex((img: ImageData) => img.id === imageId)
+        if (imageIndex !== -1 && images.value[imageIndex]) {
+          images.value[imageIndex].likes = response.likes
+        }
+
+        // トースト通知
+        const toast = useToast()
+        toast.add({
+          title: 'いいねしました！',
+          color: 'success',
+        })
+      }
+    }
+    catch (err) {
+      console.error('いいねエラー:', err)
+      const toast = useToast()
+      toast.add({
+        title: 'いいねに失敗しました',
+        color: 'error',
+      })
+    }
+    finally {
+      isLiking.value = false
+    }
+  }
+
+  return {
+    // 状態
+    images: readonly(images),
+    isLoading: readonly(isLoading),
+    error: readonly(error),
+    selectedImage,
+    currentPage: readonly(currentPage),
+    totalPages: readonly(totalPages),
+    total: readonly(total),
+    limit,
+    isLiking: readonly(isLiking),
+
+    // メソッド
+    fetchImages,
+    onPageChange,
+    likeImage,
+  }
+}
+
+// 画像ダウンロード機能
+export const useImageDownload = () => {
+  const downloadImage = async (imageUrl: string) => {
+    try {
+      const response = await fetch(imageUrl)
+      const blob = await response.blob()
+
+      // ファイル名を生成
+      const fileName = `iso-land_image_${Date.now()}.png`
+
+      // ダウンロードリンクを作成
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = fileName
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+
+      // トースト通知
+      const toast = useToast()
+      toast.add({
+        title: '画像をダウンロードしました',
+        color: 'success',
+      })
+    }
+    catch (error) {
+      console.error('ダウンロードエラー:', error)
+      const toast = useToast()
+      toast.add({
+        title: 'ダウンロードに失敗しました',
+        color: 'error',
+      })
+    }
+  }
+
+  return {
+    downloadImage,
+  }
+}
+
+// 画像シェア機能
+export const useImageShare = () => {
+  const shareImage = async (imageUrl: string) => {
+    try {
+      const response = await fetch(imageUrl)
+      const blob = await response.blob()
+
+      // Web Share APIが利用可能かチェック
+      if (navigator.share && navigator.canShare) {
+        const file = new File([blob], 'iso-land-image.png', { type: 'image/png' })
+
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            text: 'https://isometric.land #iso_land ',
+            files: [file],
+          })
+          return
+        }
+        return
+      }
+    }
+    catch (error) {
+      console.error('シェアエラー:', error)
+    }
+  }
+
+  return {
+    shareImage,
+  }
 }
