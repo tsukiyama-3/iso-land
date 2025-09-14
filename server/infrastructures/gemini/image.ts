@@ -5,6 +5,8 @@ export const generateImage = async (body: { prompt: string, latLng: google.maps.
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${config.openRouter.apiKey}`,
+      'HTTP-Referer': 'https://isometric.land',
+      'X-Title': 'iso.land',
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({

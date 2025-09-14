@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useImage } from '~/composables/image'
+import { useImage, useImageDownload, useImageShare, useImages } from '~/composables/image'
 import { useDevice } from '~/composables/device'
 
 declare global {
@@ -21,42 +21,9 @@ const isSearching = ref(false)
 const isSearchComposing = ref(false)
 
 const { prompt, messages, status, isComposing, handleEnter, latLng, onSubmit } = useImage()
-
-// 画像ダウンロード機能
-const downloadImage = async (imageUrl: string) => {
-  try {
-    const response = await fetch(imageUrl)
-    const blob = await response.blob()
-
-    // ファイル名を生成
-    const fileName = `iso-land_image_${Date.now()}.png`
-
-    // ダウンロードリンクを作成
-    const url = window.URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = fileName
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    window.URL.revokeObjectURL(url)
-
-    // トースト通知
-    const toast = useToast()
-    toast.add({
-      title: '画像をダウンロードしました',
-      color: 'success',
-    })
-  }
-  catch (error) {
-    console.error('ダウンロードエラー:', error)
-    const toast = useToast()
-    toast.add({
-      title: 'ダウンロードに失敗しました',
-      color: 'error',
-    })
-  }
-}
+const { downloadImage } = useImageDownload()
+const { shareImage } = useImageShare()
+const { likeImage } = useImages()
 
 const scrollToBottom = () => {
   nextTick(() => {
@@ -365,39 +332,62 @@ const quickChats = [
             />
 
             <div
-              v-else-if="msg.type === 'image'"
+              v-else-if="msg.type === 'image' && msg.savedUrl"
               class="space-y-2"
             >
-              <NuxtImg
-                :src="`data:${msg.mimeType};base64,${msg.data}`"
-                class="rounded-lg max-w-[300px] inline-block border border-muted"
-              />
-              <div
-                v-if="msg.savedUrl"
-                class="text-xs text-gray-500 space-y-1"
-              >
-                <div>保存済み画像:</div>
-                <div class="flex gap-2">
-                  <UButton
-                    :to="msg.savedUrl"
-                    target="_blank"
-                    size="xs"
-                    variant="outline"
-                    icon="i-lucide-external-link"
+              <UModal>
+                <UButton
+                  color="neutral"
+                  variant="subtle"
+                  :ui="{
+                    base: 'p-0 overflow-hidden border border-muted',
+                  }"
+                >
+                  <div
+                    class="max-w-[300px] overflow-hidden cursor-pointer hover:opacity-80 transition-opacity duration-200"
                   >
-                    画像を開く
-                  </UButton>
-                  <UButton
-                    size="xs"
-                    variant="outline"
-                    icon="i-lucide-download"
-                    color="primary"
-                    @click="downloadImage(msg.savedUrl)"
-                  >
-                    ダウンロード
-                  </UButton>
-                </div>
-              </div>
+                    <img
+                      :src="msg.savedUrl"
+                      :alt="'生成された画像'"
+                      class="rounded-lg w-full h-auto border border-muted"
+                    >
+                  </div>
+                </UButton>
+
+                <template #content>
+                  <div>
+                    <img
+                      :src="msg.savedUrl"
+                      :alt="'生成された画像'"
+                      class="w-full h-full object-cover aspect-square"
+                    >
+                    <div class="p-4 flex gap-2">
+                      <UButton
+                        variant="subtle"
+                        icon="i-lucide-download"
+                        class="cursor-pointer hidden lg:flex"
+                        size="xl"
+                        @click="downloadImage(msg.savedUrl)"
+                      />
+                      <UButton
+                        variant="subtle"
+                        icon="i-lucide-share"
+                        class="cursor-pointer lg:hidden"
+                        size="xl"
+                        @click="shareImage(msg.savedUrl)"
+                      />
+                      <UButton
+                        v-if="msg.savedId"
+                        variant="subtle"
+                        icon="i-lucide-heart"
+                        size="xl"
+                        class="cursor-pointer"
+                        @click="likeImage(msg.savedId)"
+                      />
+                    </div>
+                  </div>
+                </template>
+              </UModal>
             </div>
           </div>
         </div>
