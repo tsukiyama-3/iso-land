@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
   try {
     const currentCount = (await kv.get(rateLimitKey) as number) || 0
 
-    if (currentCount >= 5) {
+    if (currentCount >= 105) {
       throw createError({
         statusCode: 429,
         statusMessage: '1日の使用回数制限（5回）に達しました。時間をおいてから再度お試しください。',
@@ -29,16 +29,23 @@ export default defineEventHandler(async (event) => {
 
     const result = await generateImage(body)
 
-    // 成功時にカウントを増加（24時間で期限切れ）
+    // 画像生成成功時にのみカウントを増加（24時間で期限切れ）
     await kv.setex(rateLimitKey, 86400, currentCount + 1)
 
-    console.log(result, 'result')
     return result
   }
   catch (error: any) {
     // レート制限エラーはそのまま投げる
     if (error.statusCode === 429 || error.statusCode === 400) {
       throw error
+    }
+
+    // OpenRouter API クレジット不足エラーの場合
+    if (error.message && error.message.includes('開発者の資金がなくなりました')) {
+      throw createError({
+        statusCode: 402,
+        statusMessage: '開発者の資金がなくなり、画像が生成できませんでした。',
+      })
     }
 
     console.error('画像生成エラー:', error)
