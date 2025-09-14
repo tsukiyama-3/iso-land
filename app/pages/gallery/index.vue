@@ -97,7 +97,7 @@ const shareImage = async (imageUrl: string) => {
 
       if (navigator.canShare({ files: [file] })) {
         await navigator.share({
-          text: 'isometric.land #iso_land',
+          text: 'https://isometric.land #iso_land ',
           files: [file],
         })
         return
