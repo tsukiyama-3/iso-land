@@ -18,6 +18,8 @@ type AssistantImageMessage = {
   content: string
   mimeType: string
   data: string
+  savedUrl?: string
+  savedId?: string
 }
 
 type ChatMessage = UserMessage | AssistantTextMessage | AssistantImageMessage
@@ -91,6 +93,8 @@ export const useImage = () => {
         content: data?.content || '',
         mimeType: data?.mimeType || '',
         data: data?.data || '',
+        savedUrl: data?.savedUrl || '',
+        savedId: data?.savedId || '',
       }
       status.value = 'ready'
       toast.add({

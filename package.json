@@ -16,6 +16,8 @@
     "@nuxt/scripts": "^0.11.10",
     "@nuxt/ui": "^4.0.0-alpha.1",
     "@unhead/vue": "^2.0.14",
+    "@vercel/blob": "^1.1.1",
+    "@vercel/kv": "^2.0.0",
     "eslint": "^9.35.0",
     "html2canvas": "^1.4.1",
     "html2canvas-pro": "^1.5.11",

@@ -10,7 +10,7 @@ declare global {
 const config = useRuntimeConfig()
 
 const mapRef = ref<HTMLElement | null>(null)
-const marker = ref<any>(null)
+const marker = ref<google.maps.marker.AdvancedMarkerElement | null>(null)
 let map: google.maps.Map | null = null
 const isInteracting = ref(false)
 const chatContainerRef = ref<HTMLElement | null>(null)
@@ -57,7 +57,7 @@ const { onLoaded } = useScriptGoogleMaps({
 })
 
 onMounted(() => {
-  onLoaded(async (instance) => {
+  onLoaded(async (instance: { maps: any }) => {
     await nextTick()
     if (!mapRef.value || map) return
 
@@ -297,11 +297,30 @@ const quickChats = [
               class="w-[300px] aspect-square rounded-lg border border-muted"
             />
 
-            <NuxtImg
+            <div
               v-else-if="msg.type === 'image'"
-              :src="`data:${msg.mimeType};base64,${msg.data}`"
-              class="rounded-lg max-w-[300px] inline-block border border-muted"
-            />
+              class="space-y-2"
+            >
+              <NuxtImg
+                :src="`data:${msg.mimeType};base64,${msg.data}`"
+                class="rounded-lg max-w-[300px] inline-block border border-muted"
+              />
+              <div
+                v-if="msg.savedUrl"
+                class="text-xs text-gray-500 space-y-1"
+              >
+                <div>保存済み画像:</div>
+                <UButton
+                  :to="msg.savedUrl"
+                  target="_blank"
+                  size="xs"
+                  variant="outline"
+                  icon="i-lucide-external-link"
+                >
+                  画像を開く
+                </UButton>
+              </div>
+            </div>
           </div>
         </div>
 
