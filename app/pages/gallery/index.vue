@@ -107,17 +107,6 @@ const shareImage = async (imageUrl: string) => {
   }
   catch (error) {
     console.error('シェアエラー:', error)
-    // エラーの場合は画像をダウンロード
-    const link = document.createElement('a')
-    link.href = imageUrl
-    link.download = 'iso-land-image.png'
-    link.click()
-
-    const toast = useToast()
-    toast.add({
-      title: '画像をダウンロードしました',
-      color: 'success',
-    })
   }
 }
 
