@@ -22,7 +22,7 @@ const downloadImage = async (imageUrl: string) => {
     const blob = await response.blob()
 
     // ファイル名を生成
-    const fileName = `isometric_image_${Date.now()}.png`
+    const fileName = `iso-land_image_${Date.now()}.png`
 
     // ダウンロードリンクを作成
     const url = window.URL.createObjectURL(blob)
@@ -47,6 +47,55 @@ const downloadImage = async (imageUrl: string) => {
     toast.add({
       title: 'ダウンロードに失敗しました',
       color: 'error',
+    })
+  }
+}
+
+// 画像シェア機能
+const shareImage = async (imageUrl: string, prompt: string) => {
+  try {
+    const response = await fetch(imageUrl)
+    const blob = await response.blob()
+
+    // Web Share APIが利用可能かチェック
+    if (navigator.share && navigator.canShare) {
+      const file = new File([blob], 'iso-land-image.png', { type: 'image/png' })
+
+      if (navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: 'AIが生成したアイソメトリック画像',
+          text: prompt,
+          files: [file],
+        })
+        return
+      }
+    }
+
+    // Web Share APIが利用できない場合は、画像をダウンロード
+    const link = document.createElement('a')
+    link.href = imageUrl
+    link.download = 'iso-land-image.png'
+    link.click()
+
+    // トースト通知
+    const toast = useToast()
+    toast.add({
+      title: '画像をダウンロードしました',
+      color: 'success',
+    })
+  }
+  catch (error) {
+    console.error('シェアエラー:', error)
+    // エラーの場合は画像をダウンロード
+    const link = document.createElement('a')
+    link.href = imageUrl
+    link.download = 'iso-land-image.png'
+    link.click()
+
+    const toast = useToast()
+    toast.add({
+      title: '画像をダウンロードしました',
+      color: 'success',
     })
   }
 }
@@ -217,7 +266,7 @@ onMounted(() => {
                     variant="subtle"
                     icon="i-lucide-download"
                     size="xl"
-                    class="block"
+                    class="hidden lg:block"
                     @click="downloadImage(image.url)"
                   />
                   <UButton
@@ -225,13 +274,13 @@ onMounted(() => {
                     icon="i-lucide-share"
                     class="block lg:hidden"
                     size="xl"
-                    @click="downloadImage(image.url)"
+                    @click="shareImage(image.url, image.prompt)"
                   />
                   <UButton
                     variant="subtle"
                     icon="i-lucide-heart"
                     size="xl"
-                    class="hidden lg:block"
+                    class="block"
                     @click="likeImage(image.id)"
                   />
                 </div>
