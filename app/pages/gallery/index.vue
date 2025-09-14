@@ -1,16 +1,50 @@
 <script setup lang="ts">
-import type { BreadcrumbItem } from '@nuxt/ui'
+// 型定義
+interface ImageData {
+  id: string
+  url: string
+  prompt: string
+  latitude: number
+  longitude: number
+  createdAt: string
+  likes: number
+}
+
+interface ImagesResponse {
+  images: ImageData[]
+  total: number
+  page: number
+  limit: number
+  totalPages: number
+}
+
+interface LikeResponse {
+  success: boolean
+  likes: number
+}
+
+interface BreadcrumbItem {
+  label: string
+  icon?: string
+  to?: string
+}
+
 // ページのメタデータ
 definePageMeta({
   title: '画像ギャラリー',
 })
 
 // 状態管理
-const images = ref<any[]>([])
+const images = ref<ImageData[]>([])
 const isLoading = ref(true)
 const error = ref<string | null>(null)
+const selectedImage = ref<ImageData | null>(null)
 
-const selectedImage = ref<any>(null)
+// ページネーション状態管理
+const currentPage = ref(1)
+const totalPages = ref(0)
+const total = ref(0)
+const limit = 3
 
 // いいね状態管理
 const isLiking = ref(false)
@@ -101,12 +135,18 @@ const shareImage = async (imageUrl: string, prompt: string) => {
 }
 
 // 画像一覧を取得する関数
-const fetchImages = async () => {
+const fetchImages = async (page: number = 1) => {
   try {
     isLoading.value = true
     error.value = null
-    const response = await $fetch('/api/images')
-    images.value = response || []
+    const response = await $fetch<ImagesResponse>(`/api/images?page=${page}&limit=${limit}`)
+
+    if (response) {
+      images.value = response.images || []
+      currentPage.value = response.page || 1
+      totalPages.value = response.totalPages || 0
+      total.value = response.total || 0
+    }
   }
   catch (err) {
     console.error('画像一覧取得エラー:', err)
@@ -117,12 +157,18 @@ const fetchImages = async () => {
   }
 }
 
+// ページ変更時の処理
+const onPageChange = (page: number) => {
+  currentPage.value = page
+  fetchImages(page)
+}
+
 // いいね機能
 const likeImage = async (imageId: string) => {
   try {
     isLiking.value = true
 
-    const response = await $fetch(`/api/images/${imageId}/like`, {
+    const response = await $fetch<LikeResponse>(`/api/images/${imageId}/like`, {
       method: 'POST',
     })
 
@@ -133,8 +179,8 @@ const likeImage = async (imageId: string) => {
       }
 
       // 画像一覧のいいね数も更新
-      const imageIndex = images.value.findIndex(img => img.id === imageId)
-      if (imageIndex !== -1) {
+      const imageIndex = images.value.findIndex((img: ImageData) => img.id === imageId)
+      if (imageIndex !== -1 && images.value[imageIndex]) {
         images.value[imageIndex].likes = response.likes
       }
 
@@ -182,7 +228,7 @@ onMounted(() => {
     <UPageHeader
       headline="Gallery"
       title="みんなの作品"
-      description="ユーザーが生成したアイソメトリックな街のイラストを集めたギャラリーです。気に入った画像はダウンロードやシェアもできます。"
+      description="みんなが生成した画像を集めたギャラリーです。気に入った画像はダウンロードやシェアもできます。"
       class="text-left"
     />
 
@@ -193,9 +239,34 @@ onMounted(() => {
 
     <UPage>
       <UPageBody>
+        <!-- ローディング状態 -->
+        <div
+          v-if="isLoading"
+          class="text-center py-12"
+        >
+          <div class="text-gray-400 mb-4">
+            <svg
+              class="w-16 h-16 mx-auto animate-spin"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+          </div>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">
+            読み込み中...
+          </h3>
+        </div>
+
         <!-- 画像が存在しない場合 -->
         <div
-          v-if="images.length === 0"
+          v-else-if="images.length === 0"
           class="text-center py-12"
         >
           <div class="text-gray-400 mb-4">
@@ -230,63 +301,88 @@ onMounted(() => {
         <!-- 画像一覧 -->
         <div
           v-else
-          class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4"
+          class="space-y-6"
         >
-          <UModal
-            v-for="image in images"
-            :key="image.id"
-          >
-            <UButton
-              color="neutral"
-              variant="subtle"
-              :ui="{
-                base: 'p-0 overflow-hidden border border-muted',
-              }"
+          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+            <UModal
+              v-for="image in images"
+              :key="image.id"
             >
-              <div
-                class="aspect-square overflow-hidden cursor-pointer hover:opacity-80 transition-opacity duration-200"
+              <UButton
+                color="neutral"
+                variant="subtle"
+                :ui="{
+                  base: 'p-0 overflow-hidden border border-muted',
+                }"
               >
-                <img
-                  :src="image.url"
-                  :alt="image.prompt"
-                  class="w-full h-full object-cover"
+                <div
+                  class="aspect-square overflow-hidden cursor-pointer hover:opacity-80 transition-opacity duration-200"
                 >
-              </div>
-            </UButton>
-
-            <template #content>
-              <div>
-                <img
-                  :src="image.url"
-                  :alt="image.prompt"
-                  class="w-full h-full object-cover aspect-square"
-                >
-                <div class="p-4 flex">
-                  <UButton
-                    variant="subtle"
-                    icon="i-lucide-download"
-                    size="xl"
-                    class="hidden lg:block"
-                    @click="downloadImage(image.url)"
-                  />
-                  <UButton
-                    variant="subtle"
-                    icon="i-lucide-share"
-                    class="block lg:hidden"
-                    size="xl"
-                    @click="shareImage(image.url, image.prompt)"
-                  />
-                  <UButton
-                    variant="subtle"
-                    icon="i-lucide-heart"
-                    size="xl"
-                    class="block"
-                    @click="likeImage(image.id)"
-                  />
+                  <img
+                    :src="image.url"
+                    :alt="image.prompt"
+                    class="w-full h-full object-cover"
+                  >
                 </div>
-              </div>
-            </template>
-          </UModal>
+              </UButton>
+
+              <template #content>
+                <div>
+                  <img
+                    :src="image.url"
+                    :alt="image.prompt"
+                    class="w-full h-full object-cover aspect-square"
+                  >
+                  <div class="p-4 flex gap-2">
+                    <UButton
+                      variant="subtle"
+                      icon="i-lucide-download"
+                      class="cursor-pointer hidden lg:flex"
+                      size="xl"
+                      @click="downloadImage(image.url)"
+                    />
+                    <UButton
+                      variant="subtle"
+                      icon="i-lucide-share"
+                      class="cursor-pointer lg:hidden"
+                      size="xl"
+                      @click="shareImage(image.url, image.prompt)"
+                    />
+                    <UButton
+                      variant="subtle"
+                      icon="i-lucide-heart"
+                      size="xl"
+                      class="cursor-pointer"
+                      @click="likeImage(image.id)"
+                    />
+                  </div>
+                </div>
+              </template>
+            </UModal>
+          </div>
+
+          <!-- ページネーション -->
+          <div
+            v-if="!isLoading && total > limit"
+            class="flex justify-center"
+          >
+            <UPagination
+              v-model:page="currentPage"
+              :total="total"
+              :items-per-page="limit"
+              @update:page="onPageChange"
+            />
+          </div>
+
+          <!-- ページ情報 -->
+          <div
+            v-if="!isLoading && total > 0"
+            class="text-center text-sm text-gray-500"
+          >
+            {{ total }}件中 {{ (currentPage - 1) * limit + 1 }}-{{ Math.min(currentPage * limit, total) }}件を表示
+            <br>
+            <span class="text-xs">ページ {{ currentPage }} / {{ totalPages }}</span>
+          </div>
         </div>
       </UPageBody>
     </UPage>

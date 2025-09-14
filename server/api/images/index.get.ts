@@ -2,14 +2,29 @@ import { kv } from '@vercel/kv'
 
 export default defineEventHandler(async (event) => {
   try {
+    const query = getQuery(event)
+    const page = parseInt(query.page as string) || 1
+    const limit = parseInt(query.limit as string) || 30
+
     // KVから全ての画像メタデータを取得
     const keys = await kv.keys('image:*')
-    const images = []
+
+    if (keys.length === 0) {
+      return {
+        images: [],
+        total: 0,
+        page,
+        limit,
+        totalPages: 0,
+      }
+    }
+
+    const allImages = []
 
     for (const key of keys) {
       const imageData = await kv.get(key)
       if (imageData) {
-        images.push({
+        allImages.push({
           id: key.replace('image:', ''),
           ...imageData,
         })
@@ -17,9 +32,22 @@ export default defineEventHandler(async (event) => {
     }
 
     // 作成日時で降順ソート
-    images.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    allImages.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
-    return images
+    // ページネーション処理
+    const total = allImages.length
+    const totalPages = Math.ceil(total / limit)
+    const startIndex = (page - 1) * limit
+    const endIndex = startIndex + limit
+    const images = allImages.slice(startIndex, endIndex)
+
+    return {
+      images,
+      total,
+      page,
+      limit,
+      totalPages,
+    }
   }
   catch (error) {
     console.error('画像一覧取得エラー:', error)
