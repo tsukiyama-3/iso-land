@@ -60,7 +60,7 @@ export const useImage = () => {
     {
       role: 'assistant',
       type: 'text',
-      content: '画像生成には10秒ほどかかります。',
+      content: '画像生成には20秒ほどかかります。',
     },
   ])
 
