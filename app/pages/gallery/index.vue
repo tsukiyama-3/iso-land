@@ -136,13 +136,14 @@ onMounted(() => {
                 variant="subtle"
                 as="div"
                 :ui="{
-                  base: 'p-0 overflow-hidden border border-muted',
+                  base: 'p-0 overflow-hidden border border-muted aspect-square',
                 }"
               >
                 <div
                   class="relative aspect-square overflow-hidden cursor-pointer hover:opacity-80 transition-opacity duration-200"
                 >
-                  <div class="absolute bottom-0 right-0 flex items-center">
+                  <!-- ボタンエリアを固定位置に配置 -->
+                  <div class="absolute bottom-0 right-0 flex items-center z-10">
                     <div class="flex items-center gap-0.5">
                       <span class="text-xs text-muted-foreground">{{ image.likes || 0 }}</span>
                       <UButton
@@ -171,21 +172,24 @@ onMounted(() => {
                       @click.stop="shareImage(image.url)"
                     />
                   </div>
-                  <NuxtImg
-                    :src="image.url"
-                    :alt="image.prompt"
-                    class="w-full h-full object-cover block"
-                    loading="lazy"
-                    :width="300"
-                    :height="300"
-                    format="avif,webp"
-                    quality="80"
-                    sizes="sm:300px md:300px lg:300px xl:300px"
-                  >
-                    <template #placeholder>
-                      <USkeleton class="w-full h-full rounded-none block" />
-                    </template>
-                  </NuxtImg>
+                  <!-- 画像エリア -->
+                  <div class="w-full h-full relative">
+                    <NuxtImg
+                      :src="image.url"
+                      :alt="image.prompt"
+                      class="w-full h-full object-cover block"
+                      loading="lazy"
+                      :width="300"
+                      :height="300"
+                      format="avif,webp"
+                      quality="50"
+                      sizes="sm:300px md:300px lg:300px xl:300px"
+                    >
+                      <template #placeholder>
+                        <USkeleton class="w-full h-full rounded-none" />
+                      </template>
+                    </NuxtImg>
+                  </div>
                 </div>
               </UButton>
 
@@ -197,11 +201,11 @@ onMounted(() => {
                       :alt="image.prompt"
                       class="w-full h-full object-cover block"
                       loading="eager"
-                      :width="800"
-                      :height="800"
+                      :width="600"
+                      :height="600"
                       format="avif,webp"
-                      quality="90"
-                      sizes="sm:400px md:600px lg:800px xl:800px"
+                      quality="50"
+                      sizes="sm:300px md:400px lg:600px xl:600px"
                     >
                       <template #placeholder>
                         <USkeleton class="w-full h-full rounded-none block" />
