@@ -142,22 +142,25 @@ onMounted(() => {
                 <div
                   class="relative aspect-square overflow-hidden cursor-pointer hover:opacity-80 transition-opacity duration-200"
                 >
-                  <div class="absolute bottom-0 right-0 flex">
-                    <UButton
-                      variant="ghost"
-                      color="neutral"
-                      icon="i-lucide-heart"
-                      size="sm"
-                      class="cursor-pointer"
-                      @click="likeImage(image.id)"
-                    />
+                  <div class="absolute bottom-0 right-0 flex items-center">
+                    <div class="flex items-center gap-0.5">
+                      <span class="text-xs text-muted-foreground">{{ image.likes || 0 }}</span>
+                      <UButton
+                        variant="ghost"
+                        color="neutral"
+                        icon="i-lucide-heart"
+                        size="sm"
+                        class="cursor-pointer hover:text-red-400"
+                        @click.stop="likeImage(image.id)"
+                      />
+                    </div>
                     <UButton
                       variant="ghost"
                       color="neutral"
                       icon="i-lucide-download"
                       class="cursor-pointer hidden lg:flex"
                       size="sm"
-                      @click="downloadImage(image.url)"
+                      @click.stop="downloadImage(image.url)"
                     />
                     <UButton
                       variant="ghost"
@@ -165,7 +168,7 @@ onMounted(() => {
                       icon="i-lucide-share"
                       class="cursor-pointer lg:hidden"
                       size="sm"
-                      @click="shareImage(image.url)"
+                      @click.stop="shareImage(image.url)"
                     />
                   </div>
                   <NuxtImg
@@ -206,21 +209,24 @@ onMounted(() => {
                     </NuxtImg>
                   </div>
                   <div class="p-4 flex justify-end gap-2">
-                    <UButton
-                      variant="ghost"
-                      color="neutral"
-                      icon="i-lucide-heart"
-                      size="xl"
-                      class="cursor-pointer"
-                      @click="likeImage(image.id)"
-                    />
+                    <div class="flex items-center gap-1">
+                      <span class="text-sm text-gray-600">{{ image.likes || 0 }}</span>
+                      <UButton
+                        variant="ghost"
+                        color="neutral"
+                        icon="i-lucide-heart"
+                        size="xl"
+                        class="cursor-pointer"
+                        @click.stop="likeImage(image.id)"
+                      />
+                    </div>
                     <UButton
                       variant="ghost"
                       color="neutral"
                       icon="i-lucide-download"
                       class="cursor-pointer hidden lg:flex"
                       size="xl"
-                      @click="downloadImage(image.url)"
+                      @click.stop="downloadImage(image.url)"
                     />
                     <UButton
                       variant="ghost"
@@ -228,7 +234,7 @@ onMounted(() => {
                       icon="i-lucide-share"
                       class="cursor-pointer lg:hidden"
                       size="xl"
-                      @click="shareImage(image.url)"
+                      @click.stop="shareImage(image.url)"
                     />
                   </div>
                 </div>

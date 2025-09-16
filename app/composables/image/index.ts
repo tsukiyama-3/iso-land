@@ -20,6 +20,7 @@ type AssistantImageMessage = {
   data: string
   savedUrl?: string
   savedId?: string
+  likes?: number
 }
 
 type ChatMessage = UserMessage | AssistantTextMessage | AssistantImageMessage
@@ -117,6 +118,7 @@ export const useImage = () => {
         data: data?.data || '',
         savedUrl: data?.savedUrl || '',
         savedId: data?.savedId || '',
+        likes: 0, // 新しく生成された画像のいいね数は0から開始
       }
       status.value = 'ready'
       toast.add({

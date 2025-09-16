@@ -345,13 +345,40 @@ const quickChats = [
                   }"
                 >
                   <div
-                    class="max-w-[300px] md:max-w-[300px] w-full overflow-hidden cursor-pointer hover:opacity-80 transition-opacity duration-200"
+                    class="max-w-[300px] md:max-w-[300px] w-full overflow-hidden cursor-pointer hover:opacity-80 transition-opacity duration-200 relative"
                   >
                     <img
                       :src="msg.savedUrl"
                       :alt="'生成された画像'"
                       class="w-full h-auto border border-muted rounded-[5px]"
                     >
+                    <div class="absolute bottom-2 right-2 flex items-center">
+                      <div class="flex items-center gap-0.5">
+                        <span class="text-xs text-muted-foreground">{{ msg.likes || 0 }}</span>
+                        <UButton
+                          v-if="msg.savedId"
+                          variant="ghost"
+                          color="neutral"
+                          icon="i-lucide-heart"
+                          class="cursor-pointer hover:text-red-400"
+                          @click.stop="likeImage(msg.savedId)"
+                        />
+                      </div>
+                      <UButton
+                        variant="ghost"
+                        color="neutral"
+                        icon="i-lucide-download"
+                        class="cursor-pointer hidden lg:flex"
+                        @click.stop="downloadImage(msg.savedUrl)"
+                      />
+                      <UButton
+                        variant="ghost"
+                        color="neutral"
+                        icon="i-lucide-share"
+                        class="cursor-pointer lg:hidden"
+                        @click.stop="shareImage(msg.savedUrl)"
+                      />
+                    </div>
                   </div>
                 </UButton>
 
@@ -362,28 +389,34 @@ const quickChats = [
                       :alt="'生成された画像'"
                       class="w-full h-auto object-cover rounded-t-lg"
                     >
-                    <div class="p-4 flex gap-2 justify-center">
+                    <div class="p-4 flex justify-end gap-2">
+                      <div class="flex items-center gap-1">
+                        <span class="text-sm text-gray-600">{{ msg.likes || 0 }}</span>
+                        <UButton
+                          v-if="msg.savedId"
+                          variant="ghost"
+                          color="neutral"
+                          icon="i-lucide-heart"
+                          size="xl"
+                          class="cursor-pointer"
+                          @click.stop="likeImage(msg.savedId)"
+                        />
+                      </div>
                       <UButton
-                        variant="subtle"
+                        variant="ghost"
+                        color="neutral"
                         icon="i-lucide-download"
                         class="cursor-pointer hidden lg:flex"
-                        size="lg"
-                        @click="downloadImage(msg.savedUrl)"
+                        size="xl"
+                        @click.stop="downloadImage(msg.savedUrl)"
                       />
                       <UButton
-                        variant="subtle"
+                        variant="ghost"
+                        color="neutral"
                         icon="i-lucide-share"
                         class="cursor-pointer lg:hidden"
-                        size="lg"
-                        @click="shareImage(msg.savedUrl)"
-                      />
-                      <UButton
-                        v-if="msg.savedId"
-                        variant="subtle"
-                        icon="i-lucide-heart"
-                        size="lg"
-                        class="cursor-pointer"
-                        @click="likeImage(msg.savedId)"
+                        size="xl"
+                        @click.stop="shareImage(msg.savedUrl)"
                       />
                     </div>
                   </div>
