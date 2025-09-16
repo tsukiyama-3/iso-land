@@ -2,6 +2,48 @@
 export default defineNuxtConfig({
   modules: ['@nuxt/ui', '@nuxt/eslint', '@nuxt/scripts', '@nuxt/image'],
   devtools: { enabled: true },
+  app: {
+    head: {
+      htmlAttrs: {
+        lang: 'ja',
+      },
+      title: 'iso.land',
+      meta: [
+        {
+          name: 'description',
+          content:
+            'マップで位置を選んでプロンプトを入力するだけで、建物のアイソメトリック画像を生成できるサービスです。',
+        },
+        {
+          property: 'og:description',
+          content:
+            'マップで位置を選んでプロンプトを入力するだけで、建物のアイソメトリック画像を生成できるサービスです。',
+        },
+        { property: 'og:title', content: 'iso.land' },
+        {
+          property: 'og:image',
+          content: 'https://res.cloudinary.com/dyoyv8djx/image/upload/v1758043616/iso.land/og_iso-land_hegccw.png',
+        },
+        { property: 'og:type', content: 'website' },
+        { property: 'og:url', content: 'https://isometric.land' },
+        { name: 'twitter:card', content: 'summary_large_image' },
+        { name: 'twitter:title', content: 'iso.land' },
+        {
+          name: 'twitter:description',
+          content:
+            'マップで位置を選んでプロンプトを入力するだけで、建物のアイソメトリック画像を生成できるサービスです。',
+        },
+        {
+          name: 'twitter:image',
+          content:
+            'https://res.cloudinary.com/dyoyv8djx/image/upload/v1758043616/iso.land/og_iso-land_hegccw.png',
+        },
+      ],
+      link: [
+        { rel: 'canonical', href: 'https://isometric.land' },
+      ],
+    },
+  },
   css: ['~/assets/css/main.css'],
   ui: {
     colorMode: false,
@@ -15,9 +57,7 @@ export default defineNuxtConfig({
         baseUrl: 'https://res.cloudinary.com/dyoyv8djx/image/upload/v1757603203/iso.land',
       },
     },
-    gemini: {
-      apiKey: '',
-    },
+    generateLimit: '',
     openRouter: {
       apiKey: '',
     },

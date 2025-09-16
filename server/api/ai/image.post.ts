@@ -19,6 +19,8 @@ export default defineEventHandler(async (event) => {
   //   })
   // }
 
+  const config = useRuntimeConfig()
+
   // レート制限チェック（一日5回まで）
   const clientIP = getHeader(event, 'x-forwarded-for') || getHeader(event, 'x-real-ip') || 'unknown'
   const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD形式
@@ -27,10 +29,10 @@ export default defineEventHandler(async (event) => {
   try {
     const currentCount = (await kv.get(rateLimitKey) as number) || 0
 
-    if (currentCount >= 105) {
+    if (config.generateLimit && String(config.generateLimit).trim() !== '' && currentCount >= Number(config.generateLimit)) {
       throw createError({
         statusCode: 429,
-        statusMessage: '1日の使用回数制限（5回）に達しました。時間をおいてから再度お試しください。',
+        statusMessage: `1日の使用回数制限（${config.generateLimit}回）に達しました。時間をおいてから再度お試しください。`,
       })
     }
     const body = await readBody<{ prompt: string, latLng: google.maps.MapMouseEvent['latLng'] }>(event)

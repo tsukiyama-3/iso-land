@@ -51,7 +51,6 @@ onMounted(() => {
     <UPageHeader
       headline="Gallery"
       title="みんなの作品"
-      description="みんなが生成した画像を集めたギャラリーです。気に入った画像はダウンロードやシェアもできます。"
       class="text-left"
     />
 
