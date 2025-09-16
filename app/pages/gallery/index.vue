@@ -140,8 +140,34 @@ onMounted(() => {
                 }"
               >
                 <div
-                  class="aspect-square overflow-hidden cursor-pointer hover:opacity-80 transition-opacity duration-200"
+                  class="relative aspect-square overflow-hidden cursor-pointer hover:opacity-80 transition-opacity duration-200"
                 >
+                  <div class="absolute bottom-0 right-0 flex">
+                    <UButton
+                      variant="ghost"
+                      color="neutral"
+                      icon="i-lucide-heart"
+                      size="sm"
+                      class="cursor-pointer"
+                      @click="likeImage(image.id)"
+                    />
+                    <UButton
+                      variant="ghost"
+                      color="neutral"
+                      icon="i-lucide-download"
+                      class="cursor-pointer hidden lg:flex"
+                      size="sm"
+                      @click="downloadImage(image.url)"
+                    />
+                    <UButton
+                      variant="ghost"
+                      color="neutral"
+                      icon="i-lucide-share"
+                      class="cursor-pointer lg:hidden"
+                      size="sm"
+                      @click="shareImage(image.url)"
+                    />
+                  </div>
                   <NuxtImg
                     :src="image.url"
                     :alt="image.prompt"
@@ -179,27 +205,30 @@ onMounted(() => {
                       </template>
                     </NuxtImg>
                   </div>
-                  <div class="p-4 flex gap-2">
+                  <div class="p-4 flex justify-end gap-2">
                     <UButton
-                      variant="subtle"
+                      variant="ghost"
+                      color="neutral"
+                      icon="i-lucide-heart"
+                      size="xl"
+                      class="cursor-pointer"
+                      @click="likeImage(image.id)"
+                    />
+                    <UButton
+                      variant="ghost"
+                      color="neutral"
                       icon="i-lucide-download"
                       class="cursor-pointer hidden lg:flex"
                       size="xl"
                       @click="downloadImage(image.url)"
                     />
                     <UButton
-                      variant="subtle"
+                      variant="ghost"
+                      color="neutral"
                       icon="i-lucide-share"
                       class="cursor-pointer lg:hidden"
                       size="xl"
                       @click="shareImage(image.url)"
-                    />
-                    <UButton
-                      variant="subtle"
-                      icon="i-lucide-heart"
-                      size="xl"
-                      class="cursor-pointer"
-                      @click="likeImage(image.id)"
                     />
                   </div>
                 </div>
