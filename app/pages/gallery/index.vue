@@ -142,21 +142,43 @@ onMounted(() => {
                 <div
                   class="aspect-square overflow-hidden cursor-pointer hover:opacity-80 transition-opacity duration-200"
                 >
-                  <img
+                  <NuxtImg
                     :src="image.url"
                     :alt="image.prompt"
-                    class="w-full h-full object-cover"
+                    class="w-full h-full object-cover block"
+                    loading="lazy"
+                    :width="300"
+                    :height="300"
+                    format="avif,webp"
+                    quality="80"
+                    sizes="sm:300px md:300px lg:300px xl:300px"
                   >
+                    <template #placeholder>
+                      <USkeleton class="w-full h-full rounded-none block" />
+                    </template>
+                  </NuxtImg>
                 </div>
               </UButton>
 
               <template #content>
                 <div>
-                  <img
-                    :src="image.url"
-                    :alt="image.prompt"
-                    class="w-full h-full object-cover aspect-square"
-                  >
+                  <div class="aspect-square">
+                    <NuxtImg
+                      :src="image.url"
+                      :alt="image.prompt"
+                      class="w-full h-full object-cover block"
+                      loading="eager"
+                      :width="800"
+                      :height="800"
+                      format="avif,webp"
+                      quality="90"
+                      sizes="sm:400px md:600px lg:800px xl:800px"
+                    >
+                      <template #placeholder>
+                        <USkeleton class="w-full h-full rounded-none block" />
+                      </template>
+                    </NuxtImg>
+                  </div>
                   <div class="p-4 flex gap-2">
                     <UButton
                       variant="subtle"

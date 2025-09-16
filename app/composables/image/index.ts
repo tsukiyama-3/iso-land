@@ -267,7 +267,7 @@ export const useImages = () => {
     isLoading: readonly(isLoading),
     error: readonly(error),
     selectedImage,
-    currentPage: readonly(currentPage),
+    currentPage,
     totalPages: readonly(totalPages),
     total: readonly(total),
     limit,

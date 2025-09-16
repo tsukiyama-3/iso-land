@@ -23,7 +23,6 @@ const items = computed(() => {
   <UHeader>
     <template #title>
       <NuxtImg
-        provider="cloudinary"
         :src="`${config.public.cloudinary.baseUrl}/logo_iso-land_shliv5.svg`"
         alt=""
         width="120"

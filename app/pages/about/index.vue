@@ -22,7 +22,6 @@ const links = ref([
     >
       <template #title>
         <NuxtImg
-          provider="cloudinary"
           :src="`${config.public.cloudinary.baseUrl}/logo_iso-land_shliv5.svg`"
           alt=""
           width="360"
@@ -31,9 +30,9 @@ const links = ref([
         />
       </template>
       <NuxtImg
-        provider="cloudinary"
         :src="`${config.public.cloudinary.baseUrl}/hero_s1dvwi.png`"
         alt=""
+        format="avif,webp"
         width="512"
         height="512"
         class="rounded-lg"
@@ -49,31 +48,15 @@ const links = ref([
       <UPageCard
         variant="subtle"
       >
-        <div class="relative overflow-hidden rounded-sm border border-dashed border-accented opacity-75 px-4 flex items-center justify-center aspect-video">
-          <svg
-            class="absolute inset-0 h-full w-full stroke-inverted/10"
-            fill="none"
-          >
-            <defs>
-              <pattern
-                id="pattern-5c1e4f0e-62d5-498b-8ff0-cf77bb448c8e"
-                x="0"
-                y="0"
-                width="10"
-                height="10"
-                patternUnits="userSpaceOnUse"
-              >
-                <path d="M-3 13 15-5M-5 5l18-18M-1 21 17 3" />
-              </pattern>
-            </defs>
-            <rect
-              stroke="none"
-              fill="url(#pattern-5c1e4f0e-62d5-498b-8ff0-cf77bb448c8e)"
-              width="100%"
-              height="100%"
-            />
-          </svg>
-          aaa
+        <div class="relative overflow-hidden rounded-sm border border-dashed border-accented px-4 flex items-center justify-center aspect-video">
+          <NuxtImg
+            :src="`${config.public.cloudinary.baseUrl}/localhost_3000__7_eczpuu.png`"
+            alt=""
+            format="avif,webp"
+            width="512"
+            height="512"
+            class="rounded-lg"
+          />
         </div>
       </UPageCard>
     </UPageSection>
@@ -85,31 +68,14 @@ const links = ref([
       <UPageCard
         variant="subtle"
       >
-        <div class="relative overflow-hidden rounded-sm border border-dashed border-accented opacity-75 px-4 flex items-center justify-center aspect-video">
-          <svg
-            class="absolute inset-0 h-full w-full stroke-inverted/10"
-            fill="none"
-          >
-            <defs>
-              <pattern
-                id="pattern-5c1e4f0e-62d5-498b-8ff0-cf77bb448c8e"
-                x="0"
-                y="0"
-                width="10"
-                height="10"
-                patternUnits="userSpaceOnUse"
-              >
-                <path d="M-3 13 15-5M-5 5l18-18M-1 21 17 3" />
-              </pattern>
-            </defs>
-            <rect
-              stroke="none"
-              fill="url(#pattern-5c1e4f0e-62d5-498b-8ff0-cf77bb448c8e)"
-              width="100%"
-              height="100%"
-            />
-          </svg>
-          aaa
+        <div class="relative overflow-hidden rounded-sm border border-dashed border-accented px-4 flex items-center justify-center aspect-video">
+          <NuxtImg
+            :src="`${config.public.cloudinary.baseUrl}/step-2_plju1y.png`"
+            alt=""
+            format="avif,webp"
+            width="512"
+            class="rounded-lg aspect-video"
+          />
         </div>
       </UPageCard>
     </UPageSection>
@@ -122,31 +88,14 @@ const links = ref([
       <UPageCard
         variant="subtle"
       >
-        <div class="relative overflow-hidden rounded-sm border border-dashed border-accented opacity-75 px-4 flex items-center justify-center aspect-video">
-          <svg
-            class="absolute inset-0 h-full w-full stroke-inverted/10"
-            fill="none"
-          >
-            <defs>
-              <pattern
-                id="pattern-5c1e4f0e-62d5-498b-8ff0-cf77bb448c8e"
-                x="0"
-                y="0"
-                width="10"
-                height="10"
-                patternUnits="userSpaceOnUse"
-              >
-                <path d="M-3 13 15-5M-5 5l18-18M-1 21 17 3" />
-              </pattern>
-            </defs>
-            <rect
-              stroke="none"
-              fill="url(#pattern-5c1e4f0e-62d5-498b-8ff0-cf77bb448c8e)"
-              width="100%"
-              height="100%"
-            />
-          </svg>
-          aaa
+        <div class="relative overflow-hidden rounded-sm border border-dashed border-accented px-4 flex items-center justify-center aspect-video">
+          <NuxtImg
+            :src="`${config.public.cloudinary.baseUrl}/step-3_ee0olh.png`"
+            alt=""
+            format="avif,webp"
+            width="512"
+            class="rounded-lg"
+          />
         </div>
       </UPageCard>
     </UPageSection>
