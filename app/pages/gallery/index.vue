@@ -67,20 +67,11 @@ onMounted(() => {
           v-if="isLoading"
           class="text-center py-12"
         >
-          <div class="text-gray-400 mb-4">
-            <svg
+          <div class="text-muted-foreground mb-4">
+            <UIcon
+              name="i-lucide-loader-circle"
               class="w-16 h-16 mx-auto animate-spin"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-              />
-            </svg>
+            />
           </div>
           <h3 class="text-lg font-medium text-gray-900 mb-2">
             読み込み中...
@@ -195,7 +186,7 @@ onMounted(() => {
 
               <template #content>
                 <div>
-                  <div class="aspect-square">
+                  <div class="aspect-square relative">
                     <NuxtImg
                       :src="image.url"
                       :alt="image.prompt"
@@ -206,11 +197,25 @@ onMounted(() => {
                       format="avif,webp"
                       quality="50"
                       sizes="sm:300px md:400px lg:600px xl:600px"
+                      @load="(event) => {
+                        const loadingOverlay = event.target.parentElement.querySelector('.loading-overlay');
+                        if (loadingOverlay) loadingOverlay.style.display = 'none';
+                      }"
+                      @error="(event) => {
+                        const loadingOverlay = event.target.parentElement.querySelector('.loading-overlay');
+                        if (loadingOverlay) loadingOverlay.style.display = 'none';
+                      }"
                     >
                       <template #placeholder>
                         <USkeleton class="w-full h-full rounded-none block" />
                       </template>
                     </NuxtImg>
+                    <div class="loading-overlay absolute inset-0 flex items-center justify-center bg-white">
+                      <UIcon
+                        name="i-lucide-loader-circle"
+                        class="w-8 h-8 text-muted-foreground animate-spin"
+                      />
+                    </div>
                   </div>
                   <div class="p-4 flex justify-end gap-2">
                     <div class="flex items-center gap-1">

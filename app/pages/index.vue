@@ -326,10 +326,18 @@ const quickChats = [
               }"
             />
 
-            <USkeleton
+            <div
               v-else-if="msg.type ==='loading'"
-              class="w-[300px] aspect-square rounded-lg border border-muted"
-            />
+              class="relative w-[300px] aspect-square rounded-lg border border-muted"
+            >
+              <USkeleton class="w-full h-full rounded-lg" />
+              <div class="absolute inset-0 flex items-center justify-center">
+                <UIcon
+                  name="i-lucide-loader-circle"
+                  class="w-8 h-8 text-muted-foreground animate-spin"
+                />
+              </div>
+            </div>
 
             <div
               v-else-if="msg.type === 'image' && msg.savedUrl"
