@@ -113,10 +113,10 @@ export const useImage = () => {
         role: 'assistant',
         type: (data?.type as 'text' | 'image') || 'text',
         content: data?.content || '',
-        mimeType: (data as any)?.mimeType || '',
-        data: (data as any)?.data || '',
+        mimeType: (data as Record<string, unknown>)?.mimeType as string || '',
+        data: (data as Record<string, unknown>)?.data as string || '',
         savedUrl: '', // 保存前なので空
-        savedId: (data as any)?.tempId || '', // 一時IDを使用
+        savedId: (data as Record<string, unknown>)?.tempId as string || '', // 一時IDを使用
         likes: 0,
       }
       status.value = 'ready'
@@ -126,22 +126,23 @@ export const useImage = () => {
       })
 
       // 画像保存を非同期で実行（バックグラウンド処理）
-      if (data?.type === 'image' && (data as any)?.data && (data as any)?.tempId) {
+      const dataRecord = data as Record<string, unknown>
+      if (data?.type === 'image' && dataRecord?.data && dataRecord?.tempId) {
         // 保存処理を非同期で実行し、完了後にUIを更新
         $fetch('/api/ai/image/save', {
           method: 'POST',
           body: {
-            data: (data as any).data,
-            tempId: (data as any).tempId,
-            prompt: (data as any).prompt,
-            latLng: (data as any).latLng,
+            data: dataRecord.data,
+            tempId: dataRecord.tempId,
+            prompt: dataRecord.prompt,
+            latLng: dataRecord.latLng,
           },
         }).then((saveResult) => {
           // 保存が完了したらsavedUrlを更新
           const messageIndex = messages.value.findIndex(msg =>
             msg.role === 'assistant'
             && msg.type === 'image'
-            && (msg as AssistantImageMessage).savedId === (data as any).tempId,
+            && (msg as AssistantImageMessage).savedId === dataRecord.tempId,
           )
           if (messageIndex !== -1) {
             (messages.value[messageIndex] as AssistantImageMessage).savedUrl = saveResult.savedUrl
@@ -158,7 +159,9 @@ export const useImage = () => {
     }
     catch (error: unknown) {
       // エラーメッセージを取得（複数のパターンに対応）
-      const errorMessage = (error as any).data?.message || (error as any).message || (error as any).data?.statusMessage || 'エラーが発生しました。'
+      const errorRecord = error as Record<string, unknown>
+      const errorData = errorRecord.data as Record<string, unknown> | undefined
+      const errorMessage = errorData?.message as string || errorRecord.message as string || errorData?.statusMessage as string || 'エラーが発生しました。'
 
       messages.value[loadingIndex] = {
         role: 'assistant',
@@ -170,13 +173,13 @@ export const useImage = () => {
       status.value = 'error'
 
       // エラーメッセージの表示
-      if ((error as any).statusCode === 429) {
+      if (errorRecord.statusCode === 429) {
         toast.add({
           title: errorMessage,
           color: 'error',
         })
       }
-      else if ((error as any).statusCode === 402) {
+      else if (errorRecord.statusCode === 402) {
         toast.add({
           title: errorMessage,
           color: 'warning',
@@ -222,11 +225,32 @@ export const useImages = () => {
   // いいね状態管理
   const isLiking = ref(false)
 
+  // キャッシュ管理
+  const cache = new Map<string, { data: ImagesResponse, timestamp: number }>()
+  const CACHE_DURATION = 5 * 60 * 1000 // 5分
+
   // 画像一覧を取得する関数
   const fetchImages = async (page: number = 1) => {
     try {
+      // キャッシュキーを生成
+      const cacheKey = `images_page_${page}_limit_${limit}`
+      const now = Date.now()
+
+      // キャッシュから取得を試行
+      const cached = cache.get(cacheKey)
+      if (cached && (now - cached.timestamp) < CACHE_DURATION) {
+        const response = cached.data
+        images.value = response.images || []
+        currentPage.value = response.page || 1
+        totalPages.value = response.totalPages || 0
+        total.value = response.total || 0
+        isLoading.value = false
+        return
+      }
+
       isLoading.value = true
       error.value = null
+
       const response = await $fetch<ImagesResponse>(`/api/images?page=${page}&limit=${limit}`)
 
       if (response) {
@@ -234,6 +258,16 @@ export const useImages = () => {
         currentPage.value = response.page || 1
         totalPages.value = response.totalPages || 0
         total.value = response.total || 0
+
+        // キャッシュに保存
+        cache.set(cacheKey, { data: response, timestamp: now })
+
+        // 古いキャッシュエントリを削除（メモリリーク防止）
+        for (const [key, value] of cache.entries()) {
+          if (now - value.timestamp > CACHE_DURATION) {
+            cache.delete(key)
+          }
+        }
       }
     }
     catch (err) {

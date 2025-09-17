@@ -26,7 +26,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // 画像のメタデータを取得
-    const imageData = await kv.get(`image:${id}`)
+    const imageData = await kv.get(`image:${id}`) as Record<string, unknown> | null
 
     if (!imageData) {
       throw createError({
@@ -38,7 +38,7 @@ export default defineEventHandler(async (event) => {
     // いいね数をインクリメント
     const updatedData = {
       ...imageData,
-      likes: (imageData.likes || 0) + 1,
+      likes: ((imageData.likes as number) || 0) + 1,
     }
 
     // 更新されたデータを保存
@@ -47,14 +47,27 @@ export default defineEventHandler(async (event) => {
     // いいね成功時にカウントを増加（1時間で期限切れ）
     await kv.setex(rateLimitKey, 300, currentCount + 1)
 
+    // いいね数が更新されたので、ギャラリーのキャッシュを無効化
+    try {
+      const keys = await kv.keys('images_list_page_*')
+      if (keys.length > 0) {
+        await kv.del(...keys)
+      }
+    }
+    catch (cacheError) {
+      // キャッシュクリアのエラーはいいね処理の成功に影響しないため、ログのみ出力
+      console.warn('キャッシュクリアエラー:', cacheError)
+    }
+
     return {
       success: true,
       likes: updatedData.likes,
     }
   }
-  catch (error: any) {
+  catch (error: unknown) {
     // レート制限エラーはそのまま投げる
-    if (error.statusCode === 429 || error.statusCode === 400 || error.statusCode === 404) {
+    const errorRecord = error as Record<string, unknown>
+    if (errorRecord?.statusCode === 429 || errorRecord?.statusCode === 400 || errorRecord?.statusCode === 404) {
       throw error
     }
 

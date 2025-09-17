@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useImages, useImageDownload, useImageShare } from '~/composables/image'
+import { useImages, useImageDownload, useImageShare } from '~/composables/image/index'
 
 interface BreadcrumbItem {
   label: string
@@ -27,6 +27,21 @@ const {
 
 const { downloadImage } = useImageDownload()
 const { shareImage } = useImageShare()
+
+// 画像ロードハンドラー
+const handleImageLoad = (payload: string | Event) => {
+  if (typeof payload === 'string') return
+  const target = payload.target as HTMLImageElement | null
+  const loadingOverlay = target?.parentElement?.querySelector('.loading-overlay') as HTMLElement
+  if (loadingOverlay) loadingOverlay.style.display = 'none'
+}
+
+const handleImageError = (payload: string | Event) => {
+  if (typeof payload === 'string') return
+  const target = payload.target as HTMLImageElement | null
+  const loadingOverlay = target?.parentElement?.querySelector('.loading-overlay') as HTMLElement
+  if (loadingOverlay) loadingOverlay.style.display = 'none'
+}
 
 const breadcrumb = ref<BreadcrumbItem[]>([
   {
@@ -169,11 +184,13 @@ onMounted(() => {
                       :alt="image.prompt"
                       class="w-full h-full object-cover block"
                       loading="lazy"
-                      :width="300"
-                      :height="300"
+                      :width="200"
+                      :height="200"
                       format="avif,webp"
-                      quality="50"
-                      sizes="sm:300px md:300px lg:300px xl:300px"
+                      quality="40"
+                      sizes="(max-width: 640px) 150px, (max-width: 768px) 200px, (max-width: 1024px) 250px, 200px"
+                      preload
+                      densities="1x 2x"
                     >
                       <template #placeholder>
                         <USkeleton class="w-full h-full rounded-none" />
@@ -196,14 +213,8 @@ onMounted(() => {
                       format="avif,webp"
                       quality="50"
                       sizes="sm:300px md:400px lg:600px xl:600px"
-                      @load="(event) => {
-                        const loadingOverlay = event.target.parentElement.querySelector('.loading-overlay');
-                        if (loadingOverlay) loadingOverlay.style.display = 'none';
-                      }"
-                      @error="(event) => {
-                        const loadingOverlay = event.target.parentElement.querySelector('.loading-overlay');
-                        if (loadingOverlay) loadingOverlay.style.display = 'none';
-                      }"
+                      @load="handleImageLoad"
+                      @error="handleImageError"
                     >
                       <template #placeholder>
                         <USkeleton class="w-full h-full rounded-none block" />

@@ -1,4 +1,5 @@
 import { saveImage } from '~~/server/domains/repositories/image'
+import { kv } from '@vercel/kv'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -18,13 +19,25 @@ export default defineEventHandler(async (event) => {
     }
 
     const result = await saveImage(body)
-    
+
+    // 新しい画像が保存されたので、ギャラリーのキャッシュを無効化
+    try {
+      const keys = await kv.keys('images_list_page_*')
+      if (keys.length > 0) {
+        await kv.del(...keys)
+      }
+    }
+    catch (cacheError) {
+      // キャッシュクリアのエラーは画像保存の成功に影響しないため、ログのみ出力
+      console.warn('キャッシュクリアエラー:', cacheError)
+    }
+
     return {
       success: true,
       ...result,
     }
   }
-  catch (error: any) {
+  catch (error: unknown) {
     console.error('画像保存エラー:', error)
     throw createError({
       statusCode: 500,
