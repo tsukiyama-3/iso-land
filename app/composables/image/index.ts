@@ -65,7 +65,6 @@ export const useImage = () => {
   ])
 
   const onSubmit = async () => {
-    console.log('onSubmit', prompt.value, prompt.value.trim())
     if (!prompt.value.trim()) {
       return
     }
