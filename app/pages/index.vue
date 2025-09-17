@@ -340,7 +340,7 @@ const quickChats = [
             </div>
 
             <div
-              v-else-if="msg.type === 'image' && msg.savedUrl"
+              v-else-if="msg.type === 'image' && (msg.data || msg.savedUrl)"
               class="space-y-2"
             >
               <UModal>
@@ -356,7 +356,7 @@ const quickChats = [
                     class="max-w-[300px] md:max-w-[300px] w-full overflow-hidden cursor-pointer hover:opacity-80 transition-opacity duration-200 relative"
                   >
                     <img
-                      :src="msg.savedUrl"
+                      :src="msg.data ? `data:${msg.mimeType || 'image/png'};base64,${msg.data}` : msg.savedUrl"
                       :alt="'生成された画像'"
                       class="w-full h-auto border border-muted rounded-[5px]"
                     >
@@ -377,14 +377,14 @@ const quickChats = [
                         color="neutral"
                         icon="i-lucide-download"
                         class="cursor-pointer hidden lg:flex"
-                        @click.stop="downloadImage(msg.savedUrl)"
+                        @click.stop="downloadImage(msg.data ? `data:${msg.mimeType || 'image/png'};base64,${msg.data}` : msg.savedUrl)"
                       />
                       <UButton
                         variant="ghost"
                         color="neutral"
                         icon="i-lucide-share"
                         class="cursor-pointer lg:hidden"
-                        @click.stop="shareImage(msg.savedUrl)"
+                        @click.stop="shareImage(msg.data ? `data:${msg.mimeType || 'image/png'};base64,${msg.data}` : msg.savedUrl)"
                       />
                     </div>
                   </div>
@@ -393,7 +393,7 @@ const quickChats = [
                 <template #content>
                   <div class="flex flex-col">
                     <img
-                      :src="msg.savedUrl"
+                      :src="msg.data ? `data:${msg.mimeType || 'image/png'};base64,${msg.data}` : msg.savedUrl"
                       :alt="'生成された画像'"
                       class="w-full h-auto object-cover rounded-t-lg"
                     >
@@ -416,7 +416,7 @@ const quickChats = [
                         icon="i-lucide-download"
                         class="cursor-pointer hidden lg:flex"
                         size="xl"
-                        @click.stop="downloadImage(msg.savedUrl)"
+                        @click.stop="downloadImage(msg.data ? `data:${msg.mimeType || 'image/png'};base64,${msg.data}` : msg.savedUrl)"
                       />
                       <UButton
                         variant="ghost"
@@ -424,7 +424,7 @@ const quickChats = [
                         icon="i-lucide-share"
                         class="cursor-pointer lg:hidden"
                         size="xl"
-                        @click.stop="shareImage(msg.savedUrl)"
+                        @click.stop="shareImage(msg.data ? `data:${msg.mimeType || 'image/png'};base64,${msg.data}` : msg.savedUrl)"
                       />
                     </div>
                   </div>

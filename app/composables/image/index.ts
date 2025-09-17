@@ -109,26 +109,57 @@ export const useImage = () => {
         },
       })
 
-      // ローディングを置き換え
+      // ローディングを置き換え（生成された画像を即座に表示）
       messages.value[loadingIndex] = {
         role: 'assistant',
         type: (data?.type as 'text' | 'image') || 'text',
         content: data?.content || '',
-        mimeType: data?.mimeType || '',
-        data: data?.data || '',
-        savedUrl: data?.savedUrl || '',
-        savedId: data?.savedId || '',
-        likes: 0, // 新しく生成された画像のいいね数は0から開始
+        mimeType: (data as any)?.mimeType || '',
+        data: (data as any)?.data || '',
+        savedUrl: '', // 保存前なので空
+        savedId: (data as any)?.tempId || '', // 一時IDを使用
+        likes: 0,
       }
       status.value = 'ready'
       toast.add({
         title: '画像生成に成功しました🎉',
         color: 'success',
       })
+
+      // 画像保存を非同期で実行（バックグラウンド処理）
+      if (data?.type === 'image' && (data as any)?.data && (data as any)?.tempId) {
+        // 保存処理を非同期で実行し、完了後にUIを更新
+        $fetch('/api/ai/image/save', {
+          method: 'POST',
+          body: {
+            data: (data as any).data,
+            tempId: (data as any).tempId,
+            prompt: (data as any).prompt,
+            latLng: (data as any).latLng,
+          },
+        }).then((saveResult) => {
+          // 保存が完了したらsavedUrlを更新
+          const messageIndex = messages.value.findIndex(msg =>
+            msg.role === 'assistant'
+            && msg.type === 'image'
+            && (msg as AssistantImageMessage).savedId === (data as any).tempId,
+          )
+          if (messageIndex !== -1) {
+            (messages.value[messageIndex] as AssistantImageMessage).savedUrl = saveResult.savedUrl
+          }
+        }).catch((error) => {
+          console.error('画像保存エラー:', error)
+          // 保存失敗のトースト通知（ユーザーには画像は見えているので軽微なエラー）
+          toast.add({
+            title: '画像の保存に失敗しました（表示は正常です）',
+            color: 'warning',
+          })
+        })
+      }
     }
-    catch (error: any) {
+    catch (error: unknown) {
       // エラーメッセージを取得（複数のパターンに対応）
-      const errorMessage = error.data?.message || error.message || error.data?.statusMessage || 'エラーが発生しました。'
+      const errorMessage = (error as any).data?.message || (error as any).message || (error as any).data?.statusMessage || 'エラーが発生しました。'
 
       messages.value[loadingIndex] = {
         role: 'assistant',
@@ -140,13 +171,13 @@ export const useImage = () => {
       status.value = 'error'
 
       // エラーメッセージの表示
-      if (error.statusCode === 429) {
+      if ((error as any).statusCode === 429) {
         toast.add({
           title: errorMessage,
           color: 'error',
         })
       }
-      else if (error.statusCode === 402) {
+      else if ((error as any).statusCode === 402) {
         toast.add({
           title: errorMessage,
           color: 'warning',
