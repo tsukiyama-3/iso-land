@@ -240,14 +240,6 @@ const quickChats = [
               >
                 <template #trailing>
                   <UButton
-                    v-if="searchQuery"
-                    icon="i-lucide-x"
-                    size="xs"
-                    variant="ghost"
-                    @click="clearSearch"
-                  />
-                  <UButton
-                    v-else
                     icon="i-lucide-search"
                     size="xs"
                     variant="ghost"
